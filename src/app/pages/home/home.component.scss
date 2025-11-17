@@ -1,0 +1,335 @@
+// Estilos da página home
+.home-page {
+  min-height: 100vh;
+}
+
+.hero-section {
+  padding-top: 4rem;
+  padding-bottom: 4rem;
+  background: linear-gradient(135deg, rgba(139, 32, 211, 0.85), rgba(219, 39, 119, 0.75)),
+              url('src/assets/hero-bg.png');
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  text-align: center;
+  position: relative;
+  z-index: 10;
+}
+
+.hero-title {
+  font-size: 3.5rem;
+  font-weight: bold;
+  color: white;
+  margin-bottom: 1.5rem;
+}
+
+.hero-subtitle {
+  font-size: 2rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 1rem;
+}
+
+.hero-description {
+  font-size: 1.25rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 2rem;
+  max-width: 48rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+
+  // Estilização do botão "Testar Gratuitamente"
+  ::ng-deep .btn-try-free.p-button {
+    background: white !important;
+    border: none !important;
+    color: #AD2BEE !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease !important;
+    cursor: pointer !important;
+
+    .p-button-label {
+      color: #AD2BEE !important;
+      font-weight: 600 !important;
+    }
+
+    &:enabled:hover {
+      background: #FBEBFA  !important;
+      color: #AD2BEE !important;
+      cursor: pointer !important;
+      border: none !important;
+
+      .p-button-label {
+        color: #AD2BEE !important;
+      }
+    }
+
+    &:focus {
+      box-shadow: 0 0 0 2px #AD2BEE !important;
+    }
+
+    &:active {
+      background: #FBEBFA  !important;
+    }
+  }
+
+  // Estilização do botão "Saiba Como Funciona"
+  ::ng-deep .btn-learn-more.p-button {
+    background: transparent !important;
+    border: 2px solid white !important;
+    color: white !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease !important;
+    cursor: pointer !important;
+
+    .p-button-label {
+      color: white !important;
+      font-weight: 600 !important;
+    }
+
+    &:enabled:hover {
+      background: #C04FA5 !important;
+      color: white !important;
+      cursor: pointer !important;
+      border: 2px solid #C04FA5 !important;
+
+      .p-button-label {
+        color: white !important;
+      }
+    }
+
+    &:focus {
+      box-shadow: 0 0 0 2px white !important;
+    }
+
+    &:active {
+      background: #C04FA5 !important;
+    }
+  }
+}
+
+.carousel-section {
+  padding: 5rem 1rem;
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+.carousel-container {
+  max-width: 1200px;
+  margin: 0 auto;
+
+  // Estilização do PrimeNG Carousel
+  ::ng-deep .p-carousel {
+    .p-carousel-content {
+      position: relative;
+    }
+
+    // Botões de navegação (setas)
+    .p-carousel-prev,
+    .p-carousel-next {
+      background: white !important;
+      color: #8B20D3 !important;
+      width: 3rem !important;
+      height: 3rem !important;
+      border-radius: 50% !important;
+      transition: all 0.3s ease !important;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+
+      &:enabled:hover {
+        background: #8B20D3 !important;
+        color: white !important;
+        transform: scale(1.1);
+      }
+
+      &:focus {
+        box-shadow: 0 0 0 2px #8B20D3 !important;
+      }
+    }
+
+    // Indicadores (dots)
+    .p-carousel-indicators {
+      .p-carousel-indicator {
+        button {
+          background: rgba(255, 255, 255, 0.4) !important;
+          width: 12px !important;
+          height: 12px !important;
+          border-radius: 50% !important;
+          transition: all 0.3s ease !important;
+
+          &:hover {
+            background: rgba(255, 255, 255, 0.7) !important;
+          }
+        }
+
+        &.p-highlight button {
+          background: white !important;
+          width: 14px !important;
+          height: 14px !important;
+        }
+      }
+    }
+  }
+}
+
+.carousel-slide {
+  position: relative;
+  min-height: 600px;
+  border-radius: 1rem;
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.slide-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(139, 32, 211, 0.75), rgba(219, 39, 119, 0.65));
+}
+
+.slide-content {
+  position: relative;
+  z-index: 10;
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+  color: white;
+}
+
+.slide-title {
+  font-size: 3rem;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+}
+
+.slide-subtitle {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.slide-description {
+  font-size: 1.25rem;
+  line-height: 1.75;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.slide-features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.feature-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  
+  i {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  h3 {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+  
+  p {
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.8);
+  }
+}
+
+.cta-section {
+  padding: 5rem 1rem;
+  background: linear-gradient(to right, hsl(280, 85%, 55%), hsl(320, 80%, 60%));
+  color: white;
+}
+
+.cta-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: center;
+
+  // Estilização do botão "Conheça Nossos Planos"
+  ::ng-deep .btn-cta-plans.p-button {
+    background: white !important;
+    border: none !important;
+    color: #AD2BEE !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease !important;
+    cursor: pointer !important;
+
+    .p-button-label {
+      color: #AD2BEE !important;
+      font-weight: 600 !important;
+    }
+
+    &:enabled:hover {
+      background: #FBEBFA !important;
+      color: #AD2BEE !important;
+      cursor: pointer !important;
+      border: none !important;
+
+      .p-button-label {
+        color: #AD2BEE !important;
+      }
+    }
+
+    &:focus {
+      box-shadow: 0 0 0 2px #AD2BEE !important;
+    }
+
+    &:active {
+      background: #FBEBFA !important;
+    }
+  }
+}
+
+.cta-title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.cta-description {
+  font-size: 1.25rem;
+  margin-bottom: 2rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+// Responsividade
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: 2rem;
+  }
+  
+  .hero-subtitle {
+    font-size: 1.5rem;
+  }
+  
+  .slide-title {
+    font-size: 2rem;
+  }
+  
+  .carousel-slide {
+    min-height: 400px;
+  }
+}

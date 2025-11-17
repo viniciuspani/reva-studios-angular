@@ -1,0 +1,346 @@
+// Estilos do dashboard do usuário
+.user-dashboard {
+  min-height: 100vh;
+  background-color: hsl(0, 0%, 98%);
+}
+
+.dashboard-container {
+  padding-top: 8rem;
+  padding-bottom: 5rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  max-width: 90rem;
+  margin: 0 auto;
+}
+
+.dashboard-header {
+  margin-bottom: 2rem;
+
+  h1 {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    color: hsl(270, 15%, 10%);
+  }
+
+  p {
+    color: hsl(270, 15%, 40%);
+  }
+}
+
+// Grid de estatísticas
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+
+  .card-icon {
+    height: 3rem;
+    width: 3rem;
+    border-radius: 9999px;
+    background: linear-gradient(to bottom right, hsl(280, 85%, 55%), hsl(320, 80%, 60%));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 1.5rem auto 1rem;
+
+    i {
+      font-size: 1.5rem;
+      color: white;
+    }
+  }
+
+  h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    color: hsl(270, 15%, 10%);
+  }
+
+  .card-description {
+    font-size: 0.875rem;
+    color: hsl(270, 15%, 40%);
+    margin-bottom: 1rem;
+  }
+
+  .stat-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: hsl(280, 85%, 55%);
+    margin-bottom: 0.5rem;
+
+    &.capitalize {
+      text-transform: capitalize;
+    }
+  }
+
+  .stat-detail {
+    font-size: 0.875rem;
+    color: hsl(270, 15%, 40%);
+    margin-top: 0.5rem;
+  }
+
+  ::ng-deep .storage-bar {
+    margin-top: 1rem;
+    height: 0.5rem;
+
+    .p-progressbar-value {
+      background: linear-gradient(to right, hsl(280, 85%, 55%), hsl(320, 80%, 60%));
+    }
+  }
+}
+
+// Grid principal
+.main-grid {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 1.5rem;
+}
+
+// Sidebar de pastas
+.folders-card {
+  height: fit-content;
+
+  .folders-header {
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid hsl(270, 20%, 90%);
+
+    h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: hsl(270, 15%, 10%);
+    }
+  }
+
+  ::ng-deep {
+    .p-tree {
+      border: none;
+      padding: 0.5rem;
+
+      .p-tree-container {
+        .p-treenode {
+          padding: 0.25rem 0;
+
+          .p-treenode-content {
+            border-radius: 0.375rem;
+            padding: 0.5rem;
+
+            &:hover {
+              background-color: hsl(270, 20%, 96%);
+            }
+
+            &.p-highlight {
+              background-color: hsl(280, 85%, 55%);
+              color: white;
+
+              .p-tree-toggler,
+              .p-treenode-icon {
+                color: white;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Seção da galeria
+.gallery-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.upload-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid hsl(270, 20%, 90%);
+
+  h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    color: hsl(270, 15%, 10%);
+  }
+
+  p {
+    font-size: 0.875rem;
+    color: hsl(270, 15%, 40%);
+  }
+}
+
+// Info do caminho do arquivo
+.file-path-info {
+  margin-top: 1.5rem;
+
+  .file-info-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem;
+
+    i {
+      color: hsl(280, 85%, 55%);
+    }
+
+    h4 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: hsl(270, 15%, 10%);
+    }
+  }
+
+  .path-details {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+
+    .path-item {
+      label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: hsl(270, 15%, 40%);
+        margin-bottom: 0.25rem;
+      }
+
+      p {
+        font-family: monospace;
+        background-color: white;
+        padding: 0.5rem;
+        border-radius: 0.25rem;
+        border: 1px solid hsl(270, 20%, 90%);
+        word-break: break-all;
+        font-size: 0.875rem;
+        color: hsl(270, 15%, 10%);
+      }
+    }
+  }
+}
+
+.gallery-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid hsl(270, 20%, 90%);
+
+  > div {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.25rem;
+
+    i {
+      color: hsl(280, 85%, 55%);
+      font-size: 1.25rem;
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: hsl(270, 15%, 10%);
+    }
+  }
+
+  > p {
+    font-size: 0.875rem;
+    color: hsl(270, 15%, 40%);
+  }
+}
+
+// Grid de fotos
+.photos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.photo-card {
+  position: relative;
+  aspect-ratio: 1;
+  background-color: hsl(270, 20%, 96%);
+  border-radius: 0.5rem;
+  overflow: hidden;
+  cursor: pointer;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .photo-overlay {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    opacity: 0;
+    transition: opacity 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  &:hover .photo-overlay {
+    opacity: 1;
+  }
+
+  .photo-name {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 0.5rem;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+// Mensagem de galeria vazia
+.no-photos {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: hsl(270, 15%, 40%);
+
+  i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    color: hsl(270, 20%, 90%);
+  }
+
+  p {
+    font-size: 1rem;
+  }
+}
+
+// Responsividade
+@media (max-width: 1024px) {
+  .main-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .folders-card {
+    max-height: 300px;
+    overflow-y: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-header h1 {
+    font-size: 2rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .photos-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+}

@@ -1,0 +1,82 @@
+<div class="home-page">
+  <app-navbar></app-navbar>
+  
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-container">
+      <h1 class="hero-title">{{ languageService.t('home.mainHero.title') }}</h1>
+      <p class="hero-subtitle">{{ languageService.t('home.mainHero.subtitle') }}</p>
+      <p class="hero-description">{{ languageService.t('home.mainHero.description') }}</p>
+      
+      <div class="hero-actions">
+        <a routerLink="/auth">
+          <p-button
+            [label]="languageService.t('home.mainHero.tryFree')"
+            styleClass="btn-try-free"
+            size="large">
+          </p-button>
+        </a>
+        <a routerLink="/sobre">
+          <p-button
+            [label]="languageService.t('home.mainHero.learnMore')"
+            styleClass="btn-learn-more"
+            size="large">
+          </p-button>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Carrossel Section -->
+  <section class="carousel-section">
+    <div class="carousel-container">
+      <p-carousel
+        [value]="carouselSlides"
+        [numVisible]="1"
+        [numScroll]="1"
+        [circular]="true"
+        [autoplayInterval]="10000"
+        [showIndicators]="false"
+        [responsiveOptions]="carouselResponsiveOptions">
+        <ng-template let-slide pTemplate="item">
+          <div class="carousel-slide" [style.background-image]="'url(' + slide.image + ')'">
+            <div class="slide-overlay"></div>
+            <div class="slide-content">
+              <h2 class="slide-title">{{ languageService.t(slide.titleKey) }}</h2>
+              <p *ngIf="slide.subtitleKey" class="slide-subtitle">
+                {{ languageService.t(slide.subtitleKey) }}
+              </p>
+              <p class="slide-description">{{ languageService.t(slide.descriptionKey) }}</p>
+              
+              <!-- Features cards -->
+              <div *ngIf="slide.features" class="slide-features">
+                <div *ngFor="let feature of slide.features" class="feature-card">
+                  <i [class]="'pi ' + feature.icon"></i>
+                  <h3>{{ languageService.t(feature.titleKey) }}</h3>
+                  <p>{{ languageService.t(feature.descKey) }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </ng-template>
+      </p-carousel>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta-section">
+    <div class="cta-container">
+      <h2 class="cta-title">{{ languageService.t('home.finalCta.title') }}</h2>
+      <p class="cta-description">{{ languageService.t('home.finalCta.description') }}</p>
+      <a routerLink="/planos">
+        <p-button
+          [label]="languageService.t('home.finalCta.button')"
+          styleClass="btn-cta-plans"
+          size="large">
+        </p-button>
+      </a>
+    </div>
+  </section>
+
+  <app-footer></app-footer>
+</div>

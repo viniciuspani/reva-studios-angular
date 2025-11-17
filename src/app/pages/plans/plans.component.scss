@@ -1,0 +1,212 @@
+// Estilos da página de planos
+.plans-page {
+  background-color: hsl(0, 0%, 100%);
+}
+
+.plans-container {
+  padding-top: 5rem;
+  padding-bottom: 10.7rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  max-width: 75rem;
+  margin: 0 auto;
+}
+
+.plans-header {
+  text-align: center;
+  margin-bottom: 3rem;
+  
+  h1 {
+    font-size: 3rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    color: hsl(270, 15%, 10%);
+  }
+  
+  p {
+    font-size: 1.25rem;
+    color: hsl(270, 15%, 40%);
+    max-width: 42rem;
+    margin: 0 auto;
+  }
+}
+
+.plans-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  max-width: 90rem;
+  margin: 0 auto;
+}
+
+.plan-card {
+  position: relative;
+  border: 1px solid hsl(270, 20%, 90%);
+  transition: transform 0.3s, box-shadow 0.3s;
+  
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  }
+  
+  &.featured-plan {
+    border-color: hsl(280, 85%, 55%);
+    box-shadow: 0 10px 40px rgba(139, 32, 211, 0.2);
+    transform: scale(1.05);
+    
+    &:hover {
+      transform: scale(1.05) translateY(-4px);
+    }
+  }
+}
+
+.popular-badge {
+  position: absolute;
+  top: -1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  
+  ::ng-deep .p-badge {
+    background: linear-gradient(to right, hsl(280, 85%, 55%), hsl(320, 80%, 60%));
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+}
+
+.plan-header {
+  margin-bottom: 1.5rem;
+  
+  h2 {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    color: hsl(270, 15%, 10%);
+  }
+  
+  .plan-storage {
+    font-size: 0.875rem;
+    color: hsl(270, 15%, 40%);
+    margin-bottom: 1rem;
+  }
+}
+
+.plan-price {
+  margin-top: 1rem;
+  
+  .price {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: hsl(280, 85%, 55%);
+  }
+  
+  .period {
+    color: hsl(270, 15%, 40%);
+    margin-left: 0.5rem;
+  }
+}
+
+.plan-features {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.875rem;
+    
+    i {
+      color: hsl(280, 85%, 55%);
+      font-size: 1.25rem;
+      flex-shrink: 0;
+      margin-top: 0.125rem;
+    }
+    
+    span {
+      color: hsl(270, 15%, 20%);
+    }
+  }
+}
+
+// Customização do PrimeNG
+::ng-deep {
+  .p-button.w-full {
+    width: 100%;
+  }
+
+  // Estilo base dos botões dos planos
+  .plan-button-essencial,
+  .plan-button-pro,
+  .plan-button-studio {
+    cursor: pointer;
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+  }
+
+  // Botão Essencial - outlined com hover rosa
+  .plan-button-essencial {
+    background-color: transparent !important;
+    border: 1px solid hsl(270, 20%, 90%) !important;
+    color: hsl(270, 15%, 10%) !important;
+
+    &:hover {
+      background-color: #EB47B4 !important;
+      border-color: #EB47B4 !important;
+      color: white !important;
+    }
+  }
+
+  // Botão Pro - filled com hover roxo
+  .plan-button-pro {
+    background: linear-gradient(to right, hsl(280, 85%, 55%), hsl(320, 80%, 60%)) !important;
+    border: none !important;
+    color: white !important;
+
+    &:hover {
+      background: #B540F0 !important;
+    }
+  }
+
+  // Botão Studio - outlined com hover rosa
+  .plan-button-studio {
+    background-color: transparent !important;
+    border: 1px solid hsl(270, 20%, 90%) !important;
+    color: hsl(270, 15%, 10%) !important;
+
+    &:hover {
+      background-color: #EB47B4 !important;
+      border-color: #EB47B4 !important;
+      color: white !important;
+    }
+  }
+}
+
+// Responsividade
+@media (max-width: 768px) {
+  .plans-header h1 {
+    font-size: 2rem;
+  }
+
+  .plans-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .plan-card.featured-plan {
+    transform: scale(1);
+  }
+}
+
+// Tablets
+@media (min-width: 769px) and (max-width: 1024px) {
+  .plans-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+  }
+
+  .plan-card.featured-plan {
+    transform: scale(1.02);
+  }
+}

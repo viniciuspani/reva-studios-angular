@@ -1,0 +1,340 @@
+<div class="admin-dashboard">
+  <app-navbar></app-navbar>
+  <p-toast></p-toast>
+
+  <div class="dashboard-container">
+    <!-- Header -->
+    <div class="dashboard-header">
+      <div>
+        <h1>Painel Administrativo</h1>
+        <p>Bem-vindo ao painel de gerenciamento de usuários</p>
+      </div>
+      <p-button 
+        label="Novo Usuário" 
+        icon="pi pi-user-plus"
+        (onClick)="openCreateDialog()">
+      </p-button>
+    </div>
+
+    <!-- Tabela de usuários -->
+    <p-card>
+      <ng-template pTemplate="header">
+        <div class="card-header">
+          <h2>Usuários Cadastrados</h2>
+          <p>Total de usuários no sistema: {{ users().length }}</p>
+        </div>
+      </ng-template>
+
+      <p-table 
+        [value]="users()" 
+        [tableStyle]="{'min-width': '60rem'}"
+        styleClass="p-datatable-striped">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Nome</th>
+            <th>Email</th>
+            <th>Plano</th>
+            <th>Armazenamento</th>
+            <th style="width: 200px">Ações</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-user>
+          <tr>
+            <td>{{ user.name }}</td>
+            <td>{{ user.email }}</td>
+            <td><span class="plan-badge">{{ user.plan }}</span></td>
+            <td>
+              <div class="storage-info">
+                <div class="storage-text">
+                  {{ formatBytes(user.storageUsed) }} / 
+                  {{ user.plan === 'studio' ? 'Ilimitado' : formatBytes(storageService.getStorageLimit(user.plan)) }}
+                </div>
+                <p-progressBar 
+                  *ngIf="user.plan !== 'studio'"
+                  [value]="getStoragePercentage(user)"
+                  [showValue]="false"
+                  styleClass="storage-bar">
+                </p-progressBar>
+              </div>
+            </td>
+            <td>
+              <div class="action-buttons">
+                <p-button 
+                  icon="pi pi-search"
+                  [rounded]="true"
+                  [text]="true"
+                  severity="info"
+                  (onClick)="openDetailsDialog(user)"
+                  pTooltip="Ver Detalhes">
+                </p-button>
+                <p-button 
+                  icon="pi pi-pencil"
+                  [rounded]="true"
+                  [text]="true"
+                  severity="secondary"
+                  (onClick)="openEditDialog(user)"
+                  pTooltip="Editar">
+                </p-button>
+                <p-button 
+                  icon="pi pi-trash"
+                  [rounded]="true"
+                  [text]="true"
+                  severity="danger"
+                  (onClick)="deleteUser(user)"
+                  pTooltip="Excluir">
+                </p-button>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="5" class="empty-message">
+              Nenhum usuário cadastrado ainda
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </p-card>
+  </div>
+
+  <!-- Dialog de Criar/Editar Usuário -->
+  <p-dialog 
+    [(visible)]="showUserDialog"
+    [modal]="true"
+    [style]="{width: '800px', maxHeight: '90vh'}"
+    [header]="editingUser() ? 'Editar Usuário' : 'Criar Novo Usuário'">
+    <form [formGroup]="userForm" (ngSubmit)="saveUser()">
+      <div class="user-form">
+        <!-- Dados Pessoais -->
+        <h3>Dados Pessoais</h3>
+
+        <div class="form-field">
+          <label for="name">Nome *</label>
+          <input pInputText id="name" formControlName="name" placeholder="Nome completo">
+        </div>
+
+        <div class="form-field">
+          <label for="email">Email *</label>
+          <input pInputText id="email" formControlName="email" type="email" placeholder="email@exemplo.com">
+        </div>
+
+        <div class="form-grid">
+          <div class="form-field">
+            <label for="cpf">CPF *</label>
+            <input pInputText id="cpf" formControlName="cpf" placeholder="000.000.000-00">
+          </div>
+          <div class="form-field">
+            <label for="cnpj">CNPJ *</label>
+            <input pInputText id="cnpj" formControlName="cnpj" placeholder="00.000.000/0000-00">
+          </div>
+        </div>
+        <p class="field-note">* Preencha CPF ou CNPJ (obrigatório)</p>
+
+        <div class="form-field">
+          <label for="rg">RG</label>
+          <input pInputText id="rg" formControlName="rg" placeholder="00.000.000-0">
+        </div>
+
+        <div class="form-field">
+          <label for="endereco">Endereço *</label>
+          <input pInputText id="endereco" formControlName="endereco" placeholder="Rua, número, bairro, cidade - UF">
+        </div>
+
+        <div class="form-field">
+          <label for="telefone">Telefone *</label>
+          <input pInputText id="telefone" formControlName="telefone" placeholder="(00) 00000-0000">
+        </div>
+
+        <p-divider></p-divider>
+
+        <!-- Dados do Plano -->
+        <h3>Dados do Plano</h3>
+
+        <div class="form-field" *ngIf="!editingUser()">
+          <label for="password">Senha *</label>
+          <input pInputText id="password" formControlName="password" type="password" placeholder="Mínimo 6 caracteres">
+        </div>
+
+        <div class="form-field">
+          <label for="plan">Plano de Armazenamento *</label>
+          <p-select 
+            formControlName="plan"
+            [options]="planOptions"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Selecione um plano"
+            styleClass="w-full">
+          </p-select>
+        </div>
+
+        <div class="form-field">
+          <label for="planType">Tipo do Plano *</label>
+          <p-select 
+            formControlName="planType"
+            [options]="planTypeOptions"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Selecione o ciclo"
+            styleClass="w-full">
+          </p-select>
+        </div>
+
+        <div class="form-field">
+          <label for="paymentMethod">Método de Pagamento *</label>
+          <p-select
+            formControlName="paymentMethod"
+            [options]="paymentOptions"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Selecione o pagamento"
+            styleClass="w-full">
+          </p-select>
+        </div>
+
+        <div class="form-field" *ngIf="editingUser()">
+          <label for="accountStatus">Status da Conta *</label>
+          <p-select 
+            formControlName="accountStatus"
+            [options]="statusOptions"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Selecione o status"
+            styleClass="w-full">
+          </p-select>
+        </div>
+
+        <div class="form-actions">
+          <p-button 
+            type="submit"
+            [label]="editingUser() ? 'Atualizar' : 'Criar'"
+            [disabled]="userForm.invalid"
+            styleClass="flex-1">
+          </p-button>
+          <p-button 
+            type="button"
+            label="Cancelar"
+            severity="secondary"
+            [outlined]="true"
+            (onClick)="closeUserDialog()">
+          </p-button>
+        </div>
+      </div>
+    </form>
+  </p-dialog>
+
+  <!-- Dialog de Detalhes do Usuário -->
+  <p-dialog 
+    [(visible)]="showDetailsDialog"
+    [modal]="true"
+    [style]="{width: '900px', maxHeight: '80vh'}"
+    header="Detalhes do Usuário">
+    <div *ngIf="viewingUser()" class="user-details">
+      <!-- Dados Pessoais -->
+      <div class="details-section">
+        <h3>Dados Pessoais</h3>
+        <div class="details-grid">
+          <div class="detail-item">
+            <label>Nome</label>
+            <p>{{ viewingUser()!.name }}</p>
+          </div>
+          <div class="detail-item">
+            <label>Email</label>
+            <p>{{ viewingUser()!.email }}</p>
+          </div>
+          <div class="detail-item">
+            <label>CPF</label>
+            <p>{{ viewingUser()!.cpf || '-' }}</p>
+          </div>
+          <div class="detail-item">
+            <label>CNPJ</label>
+            <p>{{ viewingUser()!.cnpj || '-' }}</p>
+          </div>
+          <div class="detail-item">
+            <label>RG</label>
+            <p>{{ viewingUser()!.rg || '-' }}</p>
+          </div>
+          <div class="detail-item">
+            <label>Telefone</label>
+            <p>{{ viewingUser()!.telefone || '-' }}</p>
+          </div>
+          <div class="detail-item full-width">
+            <label>Endereço</label>
+            <p>{{ viewingUser()!.endereco || '-' }}</p>
+          </div>
+          <div class="detail-item full-width">
+            <label>Data de Cadastro</label>
+            <p>{{ formatDate(viewingUser()!.createdAt) }}</p>
+          </div>
+        </div>
+      </div>
+
+      <p-divider></p-divider>
+
+      <!-- Dados do Plano -->
+      <div class="details-section">
+        <h3>Dados do Plano</h3>
+        <div class="details-grid">
+          <div class="detail-item">
+            <label>Plano de Armazenamento</label>
+            <p class="capitalize">{{ viewingUser()!.plan }}</p>
+          </div>
+          <div class="detail-item">
+            <label>Tipo do Plano</label>
+            <p class="capitalize">{{ viewingUser()!.planType || '-' }}</p>
+          </div>
+          <div class="detail-item">
+            <label>Método de Pagamento</label>
+            <p class="capitalize">{{ getPaymentLabel(viewingUser()!.paymentMethod!) }}</p>
+          </div>
+          <div class="detail-item">
+            <label>Status da Conta</label>
+            <p class="capitalize">{{ getStatusLabel(viewingUser()!.accountStatus!) }}</p>
+          </div>
+        </div>
+      </div>
+
+      <p-divider></p-divider>
+
+      <!-- Histórico de Planos -->
+      <div class="details-section">
+        <h3>Histórico de Planos</h3>
+        <p-table 
+          *ngIf="viewingUser()!.planHistory && viewingUser()!.planHistory!.length > 0; else noHistory"
+          [value]="viewingUser()!.planHistory!.slice().reverse()"
+          styleClass="p-datatable-sm">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Plano</th>
+              <th>Ciclo</th>
+              <th>Pagamento</th>
+              <th>Início</th>
+              <th>Fim</th>
+              <th>Status</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-history>
+            <tr>
+              <td class="capitalize">{{ history.planType }}</td>
+              <td class="capitalize">{{ getPlanTypeLabel(history.billingCycle) }}</td>
+              <td class="capitalize">{{ getPaymentLabel(history.paymentMethod) }}</td>
+              <td>{{ formatDate(history.startDate) }}</td>
+              <td>{{ history.endDate ? formatDate(history.endDate) : '-' }}</td>
+              <td class="capitalize">{{ getStatusLabel(history.status) }}</td>
+            </tr>
+          </ng-template>
+        </p-table>
+        <ng-template #noHistory>
+          <p class="no-history">Nenhum histórico disponível</p>
+        </ng-template>
+      </div>
+
+      <div class="dialog-footer">
+        <p-button 
+          label="Fechar"
+          (onClick)="showDetailsDialog.set(false)">
+        </p-button>
+      </div>
+    </div>
+  </p-dialog>
+</div>

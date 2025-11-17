@@ -1,0 +1,94 @@
+<div class="contact-page">
+  <app-navbar></app-navbar>
+  <p-toast></p-toast>
+  
+  <div class="contact-container">
+    <!-- Header -->
+    <div class="contact-header">
+      <h1>{{ languageService.t('contact.title') }}</h1>
+      <p>{{ languageService.t('contact.subtitle') }}</p>
+    </div>
+
+    <!-- Grid com formulário e informações -->
+    <div class="contact-grid">
+      <!-- Formulário de contato -->
+      <p-card>
+        <ng-template pTemplate="header">
+          <div class="card-header">
+            <h2>{{ languageService.t('contact.form.title') }}</h2>
+            <p>{{ languageService.t('contact.form.description') }}</p>
+          </div>
+        </ng-template>
+        
+        <form [formGroup]="contactForm" (ngSubmit)="handleSubmit()">
+          <div class="form-field">
+            <label for="name">{{ languageService.t('contact.form.name') }}</label>
+            <input 
+              pInputText 
+              id="name" 
+              formControlName="name"
+              [placeholder]="languageService.t('contact.form.namePlaceholder')">
+          </div>
+          
+          <div class="form-field">
+            <label for="email">{{ languageService.t('contact.form.email') }}</label>
+            <input 
+              pInputText 
+              id="email" 
+              formControlName="email"
+              type="email"
+              [placeholder]="languageService.t('contact.form.emailPlaceholder')">
+          </div>
+          
+          <div class="form-field">
+            <label for="subject">{{ languageService.t('contact.form.subject') }}</label>
+            <input 
+              pInputText 
+              id="subject" 
+              formControlName="subject"
+              [placeholder]="languageService.t('contact.form.subjectPlaceholder')">
+          </div>
+          
+          <div class="form-field">
+            <label for="message">{{ languageService.t('contact.form.message') }}</label>
+            <textarea
+              pInputTextarea
+              id="message"
+              formControlName="message"
+              rows="3"
+              [placeholder]="languageService.t('contact.form.messagePlaceholder')">
+            </textarea>
+          </div>
+          
+          <p-button 
+            type="submit"
+            [label]="languageService.t('contact.form.button')"
+            [disabled]="contactForm.invalid"
+            styleClass="w-full">
+          </p-button>
+        </form>
+      </p-card>
+
+      <!-- Informações de contato -->
+      <div class="contact-info">
+        <p-card *ngFor="let info of contactInfo" class="info-card">
+          <div class="info-icon">
+            <i [class]="'pi ' + info.icon"></i>
+          </div>
+          <div class="info-content">
+            <h3>{{ languageService.t(info.titleKey) }}</h3>
+            <p *ngFor="let item of info.items">{{ item }}</p>
+          </div>
+        </p-card>
+
+        <!-- Horário de atendimento -->
+        <div class="hours-card">
+          <h3>{{ languageService.t('contact.info.hoursTitle') }}</h3>
+          <p>{{ languageService.t('contact.info.hoursDescription') }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <app-footer></app-footer>
+</div>

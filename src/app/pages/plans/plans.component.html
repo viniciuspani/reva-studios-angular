@@ -1,0 +1,58 @@
+<div class="plans-page">
+  <app-navbar></app-navbar>
+  
+  <div class="plans-container">
+    <!-- Header -->
+    <div class="plans-header">
+      <h1>{{ languageService.t('plans.title') }}</h1>
+      <p>{{ languageService.t('plans.subtitle') }}</p>
+    </div>
+
+    <!-- Grid de planos -->
+    <div class="plans-grid">
+      <p-card
+        *ngFor="let plan of plans"
+        [ngClass]="{'featured-plan': plan.featured, 'plan-essencial': plan.key === 'essencial', 'plan-pro': plan.key === 'pro', 'plan-studio': plan.key === 'studio'}"
+        class="plan-card">
+
+        <!-- Badge de popular -->
+        <ng-template pTemplate="header">
+          <div *ngIf="plan.featured" class="popular-badge">
+            <p-badge [value]="languageService.t('plans.popular')" severity="info"></p-badge>
+          </div>
+        </ng-template>
+
+        <!-- Título e preço -->
+        <div class="plan-header">
+          <h2>{{ languageService.t('plans.' + plan.key + '.name') }}</h2>
+          <p class="plan-storage">{{ languageService.t('plans.' + plan.key + '.storage') }} de armazenamento</p>
+          <div class="plan-price">
+            <span class="price">{{ languageService.t('plans.' + plan.key + '.price') }}</span>
+            <span class="period">{{ languageService.t('plans.' + plan.key + '.period') }}</span>
+          </div>
+        </div>
+
+        <!-- Features -->
+        <ul class="plan-features">
+          <li *ngFor="let feature of getPlanFeatures(plan.key)">
+            <i class="pi pi-check"></i>
+            <span>{{ feature }}</span>
+          </li>
+        </ul>
+
+        <!-- Botão CTA -->
+        <ng-template pTemplate="footer">
+          <a routerLink="/auth">
+            <p-button
+              [label]="languageService.t('plans.button')"
+              [outlined]="!plan.featured"
+              [styleClass]="'w-full plan-button-' + plan.key">
+            </p-button>
+          </a>
+        </ng-template>
+      </p-card>
+    </div>
+  </div>
+
+  <app-footer></app-footer>
+</div>

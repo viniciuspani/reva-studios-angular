@@ -1,0 +1,224 @@
+<div class="auth-page">
+  <app-navbar></app-navbar>
+  <p-toast></p-toast>
+  
+  <div class="auth-container">
+    <p-card class="auth-card">
+      <ng-template pTemplate="header">
+        <div class="card-header">
+          <h2>{{ languageService.t('auth.title') }}</h2>
+          <p>{{ languageService.t('auth.subtitle') }}</p>
+        </div>
+      </ng-template>
+      
+      <!-- Formulário de Login -->
+      <form [formGroup]="loginForm" (ngSubmit)="handleLogin()">
+        <div class="form-field">
+          <label for="email">{{ languageService.t('auth.form.email') }}</label>
+          <input 
+            pInputText 
+            id="email" 
+            formControlName="email"
+            type="email"
+            placeholder="seu@email.com">
+        </div>
+        
+        <div class="form-field">
+          <label for="password">{{ languageService.t('auth.form.password') }}</label>
+          <p-password 
+            formControlName="password"
+            [feedback]="false"
+            [toggleMask]="true"
+            placeholder="••••••••">
+          </p-password>
+        </div>
+        
+        <p-button 
+          type="submit"
+          [label]="languageService.t('auth.form.loginButton')"
+          [loading]="isLoading()"
+          [disabled]="loginForm.invalid"
+          styleClass="w-full">
+        </p-button>
+      </form>
+
+      <!-- Link de recuperação de senha -->
+      <div class="recovery-link">
+        <p-button
+          [label]="languageService.t('auth.forgotPassword')"
+          [text]="true"
+          (onClick)="showRecoveryDialog.set(true)">
+        </p-button>
+      </div>
+
+      <p-divider></p-divider>
+
+      <!-- Botão de cadastro -->
+      <div class="signup-section">
+        <p class="signup-text">{{ languageService.t('auth.noAccount') }} <strong>{{ languageService.t('auth.signupFree') }}</strong></p>
+        <p-button
+          [label]="languageService.t('auth.createNewAccount')"
+          icon="pi pi-user-plus"
+          [outlined]="true"
+          (onClick)="showSignupDialog.set(true)"
+          styleClass="w-full">
+        </p-button>
+      </div>
+
+      <!-- Contas demo -->
+      <div class="demo-accounts">
+        <p><strong>{{ languageService.t('auth.demoAccounts') }}</strong></p>
+        <p>{{ languageService.t('auth.demoAdmin') }}</p>
+      </div>
+    </p-card>
+  </div>
+
+  <!-- Dialog de Recuperação de Senha -->
+  <p-dialog
+    [(visible)]="showRecoveryDialog"
+    [modal]="true"
+    [style]="{width: '450px'}"
+    [header]="languageService.t('auth.recovery.title')">
+    <form [formGroup]="recoveryForm" (ngSubmit)="handlePasswordRecovery()">
+      <p class="dialog-description">
+        {{ languageService.t('auth.recovery.description') }}
+      </p>
+
+      <div class="form-field">
+        <label for="recovery-email">{{ languageService.t('auth.form.email') }}</label>
+        <input
+          pInputText
+          id="recovery-email"
+          formControlName="email"
+          type="email"
+          [placeholder]="languageService.t('contact.form.emailPlaceholder')">
+      </div>
+
+      <p-button
+        type="submit"
+        [label]="languageService.t('auth.recovery.sendButton')"
+        [disabled]="recoveryForm.invalid"
+        styleClass="w-full">
+      </p-button>
+    </form>
+  </p-dialog>
+
+  <!-- Dialog de Cadastro -->
+  <p-dialog
+    [(visible)]="showSignupDialog"
+    [modal]="true"
+    [style]="{width: '800px', maxHeight: '90vh'}"
+    [header]="languageService.t('auth.signup.title')">
+    <form [formGroup]="signupForm" (ngSubmit)="handleSignup()">
+      <div class="signup-form">
+        <!-- Dados Pessoais -->
+        <h3>{{ languageService.t('auth.signup.personalData') }}</h3>
+
+        <div class="form-field">
+          <label for="name">{{ languageService.t('auth.form.name') }} *</label>
+          <input pInputText id="name" formControlName="name" [placeholder]="languageService.t('auth.signup.namePlaceholder')">
+        </div>
+
+        <div class="form-field">
+          <label for="signup-email">{{ languageService.t('auth.form.email') }} *</label>
+          <input pInputText id="signup-email" formControlName="email" type="email" [placeholder]="languageService.t('auth.signup.emailPlaceholder')">
+        </div>
+
+        <div class="form-grid">
+          <div class="form-field">
+            <label for="cpf">{{ languageService.t('auth.signup.cpf') }} *</label>
+            <input pInputText id="cpf" formControlName="cpf" [placeholder]="languageService.t('auth.signup.cpfPlaceholder')">
+          </div>
+          <div class="form-field">
+            <label for="cnpj">{{ languageService.t('auth.signup.cnpj') }} *</label>
+            <input pInputText id="cnpj" formControlName="cnpj" [placeholder]="languageService.t('auth.signup.cnpjPlaceholder')">
+          </div>
+        </div>
+        <p class="field-note">{{ languageService.t('auth.signup.cpfCnpjNote') }}</p>
+
+        <div class="form-field">
+          <label for="rg">{{ languageService.t('auth.signup.rg') }}</label>
+          <input pInputText id="rg" formControlName="rg" [placeholder]="languageService.t('auth.signup.rgPlaceholder')">
+        </div>
+
+        <div class="form-field">
+          <label for="endereco">{{ languageService.t('auth.signup.address') }} *</label>
+          <input pInputText id="endereco" formControlName="endereco" [placeholder]="languageService.t('auth.signup.addressPlaceholder')">
+        </div>
+
+        <div class="form-field">
+          <label for="telefone">{{ languageService.t('auth.signup.phone') }} *</label>
+          <input pInputText id="telefone" formControlName="telefone" [placeholder]="languageService.t('auth.signup.phonePlaceholder')">
+        </div>
+
+        <p-divider></p-divider>
+
+        <!-- Dados do Plano -->
+        <h3>{{ languageService.t('auth.signup.planData') }}</h3>
+
+        <div class="form-field">
+          <label for="signup-password">{{ languageService.t('auth.form.password') }} *</label>
+          <p-password
+            formControlName="password"
+            [feedback]="true"
+            [toggleMask]="true"
+            [placeholder]="languageService.t('auth.signup.passwordPlaceholder')">
+          </p-password>
+        </div>
+
+        <div class="form-field">
+          <label for="plan">{{ languageService.t('auth.signup.plan') }} *</label>
+          <p-select
+            formControlName="plan"
+            [options]="planOptions"
+            optionLabel="label"
+            optionValue="value"
+            [placeholder]="languageService.t('auth.signup.planPlaceholder')"
+            styleClass="w-full">
+          </p-select>
+        </div>
+
+        <div class="form-field">
+          <label for="planType">{{ languageService.t('auth.signup.planType') }} *</label>
+          <p-select
+            formControlName="planType"
+            [options]="planTypeOptions"
+            optionLabel="label"
+            optionValue="value"
+            [placeholder]="languageService.t('auth.signup.planTypePlaceholder')"
+            styleClass="w-full">
+          </p-select>
+        </div>
+
+        <div class="form-field">
+          <label for="paymentMethod">{{ languageService.t('auth.signup.paymentMethod') }} *</label>
+          <p-select
+            formControlName="paymentMethod"
+            [options]="paymentOptions"
+            optionLabel="label"
+            optionValue="value"
+            [placeholder]="languageService.t('auth.signup.paymentPlaceholder')"
+            styleClass="w-full">
+          </p-select>
+        </div>
+
+        <div class="form-actions">
+          <p-button
+            type="submit"
+            [label]="languageService.t('auth.signup.createButton')"
+            [loading]="isLoading()"
+            [disabled]="signupForm.invalid"
+            styleClass="flex-1">
+          </p-button>
+          <p-button
+            type="button"
+            [label]="languageService.t('auth.signup.cancelButton')"
+            severity="secondary"
+            [outlined]="true"
+            (onClick)="showSignupDialog.set(false)">
+          </p-button>
+        </div>
+      </div>
+    </form>
+  </p-dialog>
+</div>

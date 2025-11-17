@@ -1,0 +1,202 @@
+// Estilos da página de contato
+.contact-page {
+  background-color: hsl(0, 0%, 100%);
+}
+
+.contact-container {
+  padding-top: 4rem;
+  padding-bottom: 7.2rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  max-width: 80rem;
+  margin: 0 auto;
+}
+
+.contact-header {
+  text-align: center;
+  margin-bottom: 3rem;
+  
+  h1 {
+    font-size: 3rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    color: hsl(270, 15%, 10%);
+  }
+  
+  p {
+    font-size: 1.25rem;
+    color: hsl(270, 15%, 40%);
+  }
+}
+
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 0.85fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+.card-header {
+  padding: 1.5rem;
+  
+  h2 {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    color: hsl(270, 15%, 10%);
+  }
+  
+  p {
+    color: hsl(270, 15%, 40%);
+  }
+}
+
+.form-field {
+  margin-bottom: 1rem;
+
+  label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: hsl(270, 15%, 10%);
+  }
+
+  input, textarea {
+    width: 100%;
+  }
+}
+
+.contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.info-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.5rem !important;
+  background: white;
+  border: 1px solid hsl(270, 20%, 90%);
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+  .info-icon {
+    height: 2.5rem;
+    width: 2.5rem;
+    min-width: 2.5rem;
+    border-radius: 9999px;
+    background: linear-gradient(to bottom right, hsl(280, 85%, 55%), hsl(320, 80%, 60%));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    i {
+      font-size: 1.25rem;
+      color: white;
+    }
+  }
+
+  .info-content {
+    flex: 1;
+  }
+
+  h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    color: hsl(270, 15%, 10%);
+  }
+
+  p {
+    font-size: 0.875rem;
+    color: hsl(270, 15%, 40%);
+    margin: 0.125rem 0;
+  }
+}
+
+.hours-card {
+  background: linear-gradient(to right, hsl(280, 85%, 55%), hsl(320, 80%, 60%));
+  color: white;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  
+  h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+  
+  p {
+    color: rgba(255, 255, 255, 0.9);
+  }
+}
+
+// Customização do PrimeNG
+::ng-deep {
+  .p-button.w-full {
+    width: 100%;
+    background-color: #A429E2 !important;
+    border-color: #A429E2 !important;
+    color: white !important;
+    cursor: pointer !important;
+    transition: background-color 0.3s ease, border-color 0.3s ease !important;
+
+    &:enabled:hover {
+      background-color: #B540F0 !important;
+      border-color: #B540F0 !important;
+      cursor: pointer !important;
+    }
+
+    &:focus {
+      box-shadow: 0 0 0 2px rgba(164, 41, 226, 0.2) !important;
+    }
+  }
+
+  // Estilo dos inputs e textarea quando em foco
+  .p-inputtext:focus,
+  .p-inputtextarea:focus {
+    border-color: #A429E2 !important;
+    box-shadow: 0 0 0 2px rgba(164, 41, 226, 0.2) !important;
+  }
+
+  // Remover hover verde padrão dos inputs e textarea
+  .p-inputtext:enabled:hover,
+  .p-inputtextarea:enabled:hover {
+    border-color: #d1d5db !important;
+  }
+
+  .p-inputtextarea {
+    width: 100%;
+    resize: vertical;
+  }
+
+  // Fazer o formulário ter a mesma altura dos cards
+  .p-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+
+    .p-card-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .p-card-content {
+      flex: 1;
+    }
+  }
+}
+
+// Responsividade
+@media (max-width: 768px) {
+  .contact-header h1 {
+    font-size: 2rem;
+  }
+  
+  .contact-grid {
+    grid-template-columns: 1fr;
+  }
+}

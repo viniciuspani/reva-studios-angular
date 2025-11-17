@@ -1,1 +1,483 @@
 /* You can add global styles to this file, and also import other style files */
+/* Importações do PrimeNG */
+// @import "primeicons/primeicons.css";
+// @import "@primeuix/themes/lara-light-indigo/theme.css";
+// @import "primeng/resources/themes/primeng.css";
+
+/* Importações do PrimeNG 20 - ESTRUTURA ATUALIZADA */
+/* Importação apenas do PrimeIcons */
+@import "primeicons/primeicons.css";
+
+/* Variáveis de cores do Reva Studios */
+:root {
+  /* Purple/Violet - Cores primárias */
+  --reva-purple-900: #4c1d95;
+  --reva-purple-800: #5b21b6;
+  --reva-purple-700: #6b21a8;
+  --reva-purple-600: #7c3aed;
+  --reva-purple-500: #8b5cf6;
+  --reva-purple-400: #a78bfa;
+  
+  /* Pink/Magenta - Cores de destaque */
+  --reva-pink-600: #c026d3;
+  --reva-pink-500: #d946ef;
+  --reva-pink-400: #e879f9;
+  --reva-pink-300: #f0abfc;
+  
+  /* Cores do sistema */
+  --primary-color: #7c3aed;
+  --primary-hover: #6b21a8;
+  --secondary-color: #d946ef;
+  --secondary-hover: #e879f9;
+  
+  /* Navbar */
+  --navbar-bg: linear-gradient(90deg, #5b21b6 0%, #6b21a8 100%);
+  --navbar-text: #ffffff;
+  
+  /* Backgrounds */
+  --bg-light: #f9fafb;
+  --bg-white: #ffffff;
+  --bg-gray-50: #f9fafb;
+  --bg-gray-100: #f3f4f6;
+  
+  /* Text colors */
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --text-light: #9ca3af;
+  
+  /* Borders */
+  --border-color: #e5e7eb;
+  --border-radius: 8px;
+  --border-radius-lg: 12px;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+/* Reset CSS */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  overflow-x: hidden;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text-primary);
+  background-color: var(--bg-light);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar personalizado */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 5px;
+
+  &:hover {
+    background: #a0aec0;
+  }
+}
+
+/* Classes utilitárias */
+.w-full {
+  width: 100%;
+}
+
+.h-full {
+  height: 100%;
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-column {
+  flex-direction: column;
+}
+
+.align-center {
+  align-items: center;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.gap-1 {
+  gap: 0.5rem;
+}
+
+.gap-2 {
+  gap: 1rem;
+}
+
+.gap-3 {
+  gap: 1.5rem;
+}
+
+.gap-4 {
+  gap: 2rem;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.font-bold {
+  font-weight: 700;
+}
+
+.font-semibold {
+  font-weight: 600;
+}
+
+/* Animações */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
+
+.slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+/* Customizações do PrimeNG */
+.p-component {
+  font-family: inherit;
+}
+
+/* Buttons - Estilo Reva Studios */
+.p-button {
+  font-weight: 500;
+  border-radius: var(--border-radius);
+  transition: all 0.3s ease;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+
+  &.p-button-primary {
+    background: var(--reva-purple-600);
+    border-color: var(--reva-purple-600);
+
+    &:hover {
+      background: var(--reva-purple-700);
+      border-color: var(--reva-purple-700);
+    }
+  }
+
+  &.p-button-secondary {
+    background: var(--reva-pink-500);
+    border-color: var(--reva-pink-500);
+
+    &:hover {
+      background: var(--reva-pink-400);
+      border-color: var(--reva-pink-400);
+    }
+  }
+
+  &:focus {
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
+  }
+}
+
+/* Input Fields */
+.p-inputtext {
+  border-radius: var(--border-radius);
+  border: 2px solid var(--border-color);
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+
+  &:focus {
+    border-color: var(--reva-purple-600);
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+  }
+
+  &::placeholder {
+    color: var(--text-light);
+  }
+}
+
+/* Cards */
+.p-card {
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-md);
+  border: none;
+
+  .p-card-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+  }
+
+  .p-card-subtitle {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+  }
+}
+
+/* Dialog/Modal */
+.p-dialog {
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-xl);
+
+  .p-dialog-header {
+    background: white;
+    border-bottom: 1px solid var(--border-color);
+    padding: 1.5rem;
+    border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+
+    .p-dialog-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+  }
+
+  .p-dialog-content {
+    padding: 1.5rem;
+    background: white;
+  }
+
+  .p-dialog-footer {
+    background: white;
+    border-top: 1px solid var(--border-color);
+    padding: 1rem 1.5rem;
+    border-radius: 0 0 var(--border-radius-lg) var(--border-radius-lg);
+  }
+}
+
+/* DataTable */
+.p-datatable {
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+
+  .p-datatable-header {
+    background: white;
+    border-bottom: 1px solid var(--border-color);
+    padding: 1rem;
+  }
+
+  .p-datatable-thead > tr > th {
+    background: var(--bg-gray-50);
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-color: var(--border-color);
+    padding: 1rem;
+  }
+
+  .p-datatable-tbody > tr {
+    &:hover {
+      background: var(--bg-gray-50);
+    }
+
+    > td {
+      border-color: var(--border-color);
+      padding: 1rem;
+      color: var(--text-primary);
+    }
+  }
+}
+
+/* Toast Messages */
+.p-toast {
+  .p-toast-message {
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-lg);
+    border-left: 4px solid;
+
+    &.p-toast-message-success {
+      background: white;
+      border-left-color: #10b981;
+      
+      .p-toast-message-icon {
+        color: #10b981;
+      }
+    }
+
+    &.p-toast-message-error {
+      background: white;
+      border-left-color: #ef4444;
+      
+      .p-toast-message-icon {
+        color: #ef4444;
+      }
+    }
+
+    &.p-toast-message-warn {
+      background: white;
+      border-left-color: #f59e0b;
+      
+      .p-toast-message-icon {
+        color: #f59e0b;
+      }
+    }
+
+    &.p-toast-message-info {
+      background: white;
+      border-left-color: #3b82f6;
+      
+      .p-toast-message-icon {
+        color: #3b82f6;
+      }
+    }
+  }
+}
+
+/* Dropdown */
+.p-dropdown {
+  border-radius: var(--border-radius);
+  border: 2px solid var(--border-color);
+
+  &:hover {
+    border-color: var(--reva-purple-400);
+  }
+
+  &.p-focus {
+    border-color: var(--reva-purple-600);
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+  }
+}
+
+/* Password Input */
+.p-password {
+  width: 100%;
+
+  input {
+    width: 100%;
+    border-radius: var(--border-radius);
+    border: 2px solid var(--border-color);
+    padding: 0.75rem 1rem;
+
+    &:focus {
+      border-color: var(--reva-purple-600);
+      box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+    }
+  }
+}
+
+/* Progress Bar */
+.p-progressbar {
+  height: 10px;
+  border-radius: 999px;
+  background: var(--bg-gray-100);
+
+  .p-progressbar-value {
+    background: var(--reva-purple-600);
+    border-radius: 999px;
+  }
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  body {
+    font-size: 14px;
+  }
+
+  .p-dialog {
+    width: 95vw !important;
+    max-width: 95vw !important;
+    margin: 1rem;
+  }
+
+  .p-datatable {
+    font-size: 0.875rem;
+
+    .p-datatable-thead > tr > th,
+    .p-datatable-tbody > tr > td {
+      padding: 0.75rem 0.5rem;
+    }
+  }
+}
+
+/* Loading Overlay */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid var(--reva-purple-600);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Print styles */
+@media print {
+  .p-button,
+  .p-toolbar,
+  .p-paginator {
+    display: none !important;
+  }
+}

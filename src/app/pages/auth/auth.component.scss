@@ -1,0 +1,133 @@
+// Estilos da página de autenticação
+.auth-page {
+  min-height: 100vh;
+  background-color: hsl(0, 0%, 98%);
+}
+
+.auth-container {
+  padding-top: 8rem;
+  padding-bottom: 5rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  max-width: 28rem;
+  margin: 0 auto;
+}
+
+.auth-card {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+  padding: 1.5rem;
+  text-align: center;
+  
+  h2 {
+    font-size: 1.875rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+  }
+  
+  p {
+    color: hsl(270, 15%, 40%);
+  }
+}
+
+.form-field {
+  margin-bottom: 1.5rem;
+  
+  label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: hsl(270, 15%, 10%);
+  }
+  
+  input, ::ng-deep .p-password, ::ng-deep .p-dropdown {
+    width: 100%;
+  }
+}
+
+.recovery-link {
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.signup-section {
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.signup-text {
+  margin-bottom: 1rem;
+  color: hsl(270, 15%, 40%);
+  
+  strong {
+    color: hsl(280, 85%, 55%);
+  }
+}
+
+.demo-accounts {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background-color: hsl(270, 20%, 96%);
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  
+  p {
+    margin: 0.25rem 0;
+  }
+}
+
+// Estilos dos dialogs
+.dialog-description {
+  margin-bottom: 1.5rem;
+  color: hsl(270, 15%, 40%);
+}
+
+.signup-form {
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: 0 0.5rem;
+  
+  h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid hsl(270, 20%, 90%);
+    padding-bottom: 0.5rem;
+  }
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.field-note {
+  font-size: 0.75rem;
+  color: hsl(270, 15%, 40%);
+  margin-top: -1rem;
+  margin-bottom: 1rem;
+}
+
+.form-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+}
+
+// Customização do PrimeNG
+::ng-deep {
+  .p-button.w-full {
+    width: 100%;
+  }
+  
+  .p-password {
+    width: 100%;
+    
+    input {
+      width: 100%;
+    }
+  }
+}

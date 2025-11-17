@@ -1,0 +1,37 @@
+<div class="about-page">
+  <app-navbar></app-navbar>
+  
+  <div class="about-container">
+    <!-- Header -->
+    <div class="about-header">
+      <h1>{{ languageService.t('about.title') }}</h1>
+      <p class="subtitle">{{ languageService.t('about.subtitle') }}</p>
+    </div>
+
+    <!-- Descrição principal -->
+    <div class="about-description">
+      <p>{{ languageService.t('about.description') }}</p>
+    </div>
+
+    <!-- Grid de cards informativos -->
+    <div class="info-grid">
+      <p-card *ngFor="let card of infoCards" class="info-card">
+        <ng-template pTemplate="header">
+          <div class="card-icon">
+            <i [class]="'pi ' + card.icon"></i>
+          </div>
+        </ng-template>
+        <h3>{{ languageService.t(card.titleKey) }}</h3>
+        <p>{{ languageService.t(card.descKey) }}</p>
+      </p-card>
+    </div>
+
+    <!-- CTA Final -->
+    <div class="about-cta">
+      <h2>{{ languageService.t('about.cta.title') }}</h2>
+      <p class="cta-subtitle">{{ languageService.t('about.cta.description') }}</p>
+    </div>
+  </div>
+
+  <app-footer></app-footer>
+</div>

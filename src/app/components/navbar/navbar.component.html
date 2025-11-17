@@ -1,0 +1,86 @@
+<!-- Barra de navegação fixa no topo -->
+<nav class="navbar">
+  <div class="navbar-container">
+    <!-- Logo com link para home -->
+    <a routerLink="/" class="navbar-brand">
+      <img src="assets/logo-reva-studios.png" alt="Reva Studios" class="brand-logo">
+    </a>
+
+    <!-- Menu de navegação e ações -->
+    <div class="navbar-menu">
+      <!-- Menu para usuário não logado -->
+      <ng-container *ngIf="!currentUser">
+        <div class="navbar-item">
+          <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+            {{ languageService.t('nav.home') }}
+          </a>
+        </div>
+        <div class="navbar-item">
+          <a routerLink="/sobre" routerLinkActive="active">
+            {{ languageService.t('nav.about') }}
+          </a>
+        </div>
+        <div class="navbar-item">
+          <a routerLink="/planos" routerLinkActive="active">
+            {{ languageService.t('nav.plans') }}
+          </a>
+        </div>
+        <div class="navbar-item">
+          <a routerLink="/contato" routerLinkActive="active">
+            {{ languageService.t('nav.contact') }}
+          </a>
+        </div>
+      </ng-container>
+
+      <!-- Menu para usuário logado -->
+      <ng-container *ngIf="currentUser">
+        <div class="navbar-item">
+          <a
+            [routerLink]="currentUser.role === 'admin' ? '/admin' : '/dashboard'"
+            routerLinkActive="active">
+            <i class="pi pi-th-large"></i>
+            {{ languageService.t('nav.dashboard') }}
+          </a>
+        </div>
+      </ng-container>
+
+      <!-- User info (quando logado) -->
+      <ng-container *ngIf="currentUser">
+        <div class="user-info">
+          <div class="user-name">
+            <i class="pi pi-user"></i>
+            <span>{{ currentUser.name }}</span>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- Botão de idioma -->
+      <p-button
+        [label]="getLanguageButtonText()"
+        icon="pi pi-language"
+        (onClick)="toggleLanguage()"
+        [text]="true"
+        styleClass="language-button">
+      </p-button>
+
+      <!-- Botão de login/logout -->
+      <ng-container *ngIf="!currentUser">
+        <a routerLink="/auth">
+          <p-button
+            [label]="languageService.t('nav.login')"
+            styleClass="login-button">
+          </p-button>
+        </a>
+      </ng-container>
+
+      <ng-container *ngIf="currentUser">
+        <p-button
+          [label]="languageService.t('nav.logout')"
+          icon="pi pi-sign-out"
+          (onClick)="handleLogout()"
+          styleClass="logout-button">
+        </p-button>
+      </ng-container>
+    </div>
+  </div>
+</nav>
