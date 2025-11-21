@@ -31,7 +31,7 @@ import { LanguageService } from '../../services/language.service';
   ],
   providers: [MessageService],
   templateUrl: 'contact.component.html',
-  styleUrls: ['contact.component.scss']
+  styleUrls: ['contact.component.scss'] 
 })
 export class ContactComponent {
   private fb = inject(FormBuilder);

@@ -5,16 +5,17 @@
 
 .contact-container {
   padding-top: 4rem;
-  padding-bottom: 7.2rem;
+  padding-bottom: 4.3rem;
   padding-left: 1rem;
   padding-right: 1rem;
   max-width: 80rem;
   margin: 0 auto;
+  
 }
 
 .contact-header {
   text-align: center;
-  margin-bottom: 3rem;
+  margin-bottom: 2rem;
   
   h1 {
     font-size: 3rem;
@@ -34,10 +35,12 @@
   grid-template-columns: 1fr 0.85fr;
   gap: 2rem;
   align-items: start;
+  
 }
 
 .card-header {
   padding: 1.5rem;
+  
   
   h2 {
     font-size: 1.5rem;
@@ -52,12 +55,14 @@
 }
 
 .form-field {
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
+  
 
   label {
     display: block;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.4rem;
     font-weight: 500;
+    font-size: 0.95rem;
     color: hsl(270, 15%, 10%);
   }
 
@@ -74,13 +79,18 @@
 
 .info-card {
   display: flex;
-  align-items: flex-start;
-  gap: 1rem;
-  padding: 1.5rem !important;
+  flex-direction: column;
+  gap: 0.5rem;
   background: white;
   border: 1px solid hsl(270, 20%, 90%);
   border-radius: 0.5rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+  .info-header {
+    display: flex;
+    align-items: start;
+    gap: 0.75rem;
+  }
 
   .info-icon {
     height: 2.5rem;
@@ -98,21 +108,24 @@
     }
   }
 
-  .info-content {
-    flex: 1;
-  }
-
   h3 {
     font-size: 1rem;
     font-weight: 600;
-    margin-bottom: 0.25rem;
+    margin: 0;
     color: hsl(270, 15%, 10%);
+    line-height: 1.2;
+  }
+
+  .info-content {
+    padding-left: 3.25rem;  
+    
   }
 
   p {
-    font-size: 0.875rem;
+    font-size: 1rem;
     color: hsl(270, 15%, 40%);
     margin: 0.125rem 0;
+    line-height: 1.4;
   }
 }
 
@@ -137,11 +150,12 @@
 ::ng-deep {
   .p-button.w-full {
     width: 100%;
-    background-color: #A429E2 !important;
+    background-color: #9f13e6 !important;
     border-color: #A429E2 !important;
     color: white !important;
     cursor: pointer !important;
     transition: background-color 0.3s ease, border-color 0.3s ease !important;
+    margin-top: 1rem !important;
 
     &:enabled:hover {
       background-color: #B540F0 !important;
@@ -154,24 +168,38 @@
     }
   }
 
-  // Estilo dos inputs e textarea quando em foco
-  .p-inputtext:focus,
-  .p-inputtextarea:focus {
+  // Estilo dos inputs quando em foco
+  .p-inputtext:focus {
     border-color: #A429E2 !important;
     box-shadow: 0 0 0 2px rgba(164, 41, 226, 0.2) !important;
   }
 
-  // Remover hover verde padrão dos inputs e textarea
-  .p-inputtext:enabled:hover,
-  .p-inputtextarea:enabled:hover {
+  // Remover hover verde padrão dos inputs
+  .p-inputtext:enabled:hover {
     border-color: #d1d5db !important;
   }
 
-  .p-inputtextarea {
-    width: 100%;
-    resize: vertical;
+  // Estilo do textarea - estado padrão
+  textarea.p-inputtextarea {
+    width: 100% !important;
+    resize: vertical !important;
+    border: 2px solid #e5e7eb !important;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease !important;
   }
 
+  // Textarea hover - mantém borda cinza
+  textarea.p-inputtextarea:enabled:hover {
+    border-color: #d1d5db !important;
+  }
+
+  // Textarea focus - borda roxa
+  textarea.p-inputtextarea:focus {
+    border-color: #A429E2 !important;
+    box-shadow: 0 0 0 2px rgba(164, 41, 226, 0.2) !important;
+    outline: none !important;
+  }
+
+ 
   // Fazer o formulário ter a mesma altura dos cards
   .p-card {
     height: 100%;

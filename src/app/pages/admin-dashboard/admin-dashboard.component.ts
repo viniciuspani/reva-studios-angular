@@ -12,6 +12,7 @@ import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { ProgressBarModule } from 'primeng/progressbar';
 import { DividerModule } from 'primeng/divider';
+import { TooltipModule } from 'primeng/tooltip';
 import { NavbarComponent } from '../../components/navbar/navbar.component';
 import { StorageService } from '../../services/storage.service';
 import { LanguageService } from '../../services/language.service';
@@ -36,6 +37,7 @@ import { User, StoragePlan, PlanType, PaymentMethod, AccountStatus } from '../..
     ToastModule,
     ProgressBarModule,
     DividerModule,
+    TooltipModule,
     NavbarComponent
   ],
   providers: [MessageService],
@@ -327,6 +329,18 @@ export class AdminDashboardComponent implements OnInit {
       'anual': 'Anual'
     };
     return planTypeMap[planType] || planType;
+  }
+
+  /**
+   * Obtém label do plano de armazenamento traduzida
+   */
+  getPlanLabel(plan: StoragePlan): string {
+    const planMap: Record<StoragePlan, string> = {
+      'essencial': 'Essencial',
+      'pro': 'Pro',
+      'studio': 'Studio'
+    };
+    return planMap[plan] || plan;
   }
 
   /**

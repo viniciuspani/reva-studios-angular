@@ -47,8 +47,10 @@
         <p-button
           [label]="languageService.t('auth.forgotPassword')"
           [text]="true"
+          [link]="true"
           (onClick)="showRecoveryDialog.set(true)">
         </p-button>
+
       </div>
 
       <p-divider></p-divider>

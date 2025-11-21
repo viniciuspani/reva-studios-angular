@@ -55,7 +55,7 @@
               pInputTextarea
               id="message"
               formControlName="message"
-              rows="3"
+              rows="2"
               [placeholder]="languageService.t('contact.form.messagePlaceholder')">
             </textarea>
           </div>
@@ -72,11 +72,13 @@
       <!-- Informações de contato -->
       <div class="contact-info">
         <p-card *ngFor="let info of contactInfo" class="info-card">
-          <div class="info-icon">
-            <i [class]="'pi ' + info.icon"></i>
+          <div class="info-header">
+            <div class="info-icon">
+              <i [class]="'pi ' + info.icon"></i>
+            </div>
+            <h3>{{ languageService.t(info.titleKey) }}</h3>
           </div>
           <div class="info-content">
-            <h3>{{ languageService.t(info.titleKey) }}</h3>
             <p *ngFor="let item of info.items">{{ item }}</p>
           </div>
         </p-card>

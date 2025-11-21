@@ -5,97 +5,92 @@
   <div class="dashboard-container">
     <!-- Header -->
     <div class="dashboard-header">
-      <div>
+      <div class="header-text">
         <h1>Painel Administrativo</h1>
-        <p>Bem-vindo ao painel de gerenciamento de usuários</p>
+        <p>Bem-vindo ao painel administrativo</p>
       </div>
-      <p-button 
-        label="Novo Usuário" 
+      <p-button
+        label="Novo Usuário"
         icon="pi pi-user-plus"
-        (onClick)="openCreateDialog()">
+        (onClick)="openCreateDialog()"
+        styleClass="btn-new-user">
       </p-button>
     </div>
 
-    <!-- Tabela de usuários -->
-    <p-card>
-      <ng-template pTemplate="header">
-        <div class="card-header">
-          <h2>Usuários Cadastrados</h2>
-          <p>Total de usuários no sistema: {{ users().length }}</p>
-        </div>
-      </ng-template>
-
-      <p-table 
-        [value]="users()" 
-        [tableStyle]="{'min-width': '60rem'}"
-        styleClass="p-datatable-striped">
+    <!-- Card de usuários -->
+    <div class="users-section">
+      <p-card styleClass="users-card">
         <ng-template pTemplate="header">
-          <tr>
-            <th>Nome</th>
-            <th>Email</th>
-            <th>Plano</th>
-            <th>Armazenamento</th>
-            <th style="width: 200px">Ações</th>
-          </tr>
+          <div class="card-header">
+            <h2>Usuários Cadastrados</h2>
+            <p>Total de usuários no sistema: <strong>{{ users().length }}</strong></p>
+          </div>
         </ng-template>
-        <ng-template pTemplate="body" let-user>
-          <tr>
-            <td>{{ user.name }}</td>
-            <td>{{ user.email }}</td>
-            <td><span class="plan-badge">{{ user.plan }}</span></td>
-            <td>
-              <div class="storage-info">
-                <div class="storage-text">
-                  {{ formatBytes(user.storageUsed) }} / 
+
+        <p-table
+          [value]="users()"
+          [tableStyle]="{'min-width': '60rem'}">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Nome</th>
+              <th>Email</th>
+              <th>Plano de Armazenamento</th>
+              <th>Armazenamento</th>
+              <th class="actions-header">Ações</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-user>
+            <tr>
+              <td>{{ user.name }}</td>
+              <td>{{ user.email }}</td>
+              <td>
+                <span class="plan-badge plan-{{ user.plan }}">
+                  {{ getPlanLabel(user.plan) }}
+                </span>
+              </td>
+              <td>
+                <div class="storage-cell">
+                  {{ formatBytes(user.storageUsed) }} /
                   {{ user.plan === 'studio' ? 'Ilimitado' : formatBytes(storageService.getStorageLimit(user.plan)) }}
                 </div>
-                <p-progressBar 
-                  *ngIf="user.plan !== 'studio'"
-                  [value]="getStoragePercentage(user)"
-                  [showValue]="false"
-                  styleClass="storage-bar">
-                </p-progressBar>
-              </div>
-            </td>
-            <td>
-              <div class="action-buttons">
-                <p-button 
-                  icon="pi pi-search"
-                  [rounded]="true"
-                  [text]="true"
-                  severity="info"
-                  (onClick)="openDetailsDialog(user)"
-                  pTooltip="Ver Detalhes">
-                </p-button>
-                <p-button 
-                  icon="pi pi-pencil"
-                  [rounded]="true"
-                  [text]="true"
-                  severity="secondary"
-                  (onClick)="openEditDialog(user)"
-                  pTooltip="Editar">
-                </p-button>
-                <p-button 
-                  icon="pi pi-trash"
-                  [rounded]="true"
-                  [text]="true"
-                  severity="danger"
-                  (onClick)="deleteUser(user)"
-                  pTooltip="Excluir">
-                </p-button>
-              </div>
-            </td>
-          </tr>
-        </ng-template>
-        <ng-template pTemplate="emptymessage">
-          <tr>
-            <td colspan="5" class="empty-message">
-              Nenhum usuário cadastrado ainda
-            </td>
-          </tr>
-        </ng-template>
-      </p-table>
-    </p-card>
+              </td>
+              <td>
+                <div class="action-buttons">
+                  <button
+                    class="action-btn btn-view"
+                    (click)="openDetailsDialog(user)"
+                    pTooltip="Ver Detalhes"
+                    tooltipPosition="top">
+                    <i class="pi pi-search"></i>
+                  </button>
+                  <button
+                    class="action-btn btn-edit"
+                    (click)="openEditDialog(user)"
+                    pTooltip="Editar"
+                    tooltipPosition="top">
+                    <i class="pi pi-pencil"></i>
+                  </button>
+                  <button
+                    class="action-btn btn-delete"
+                    (click)="deleteUser(user)"
+                    pTooltip="Excluir"
+                    tooltipPosition="top">
+                    <i class="pi pi-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="5" class="empty-message">
+                Nenhum usuário cadastrado ainda
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </p-card>
+    </div>
   </div>
 
   <!-- Dialog de Criar/Editar Usuário -->
@@ -158,24 +153,26 @@
 
         <div class="form-field">
           <label for="plan">Plano de Armazenamento *</label>
-          <p-select 
+          <p-select
             formControlName="plan"
             [options]="planOptions"
             optionLabel="label"
             optionValue="value"
             placeholder="Selecione um plano"
+            appendTo="body"
             styleClass="w-full">
           </p-select>
         </div>
 
         <div class="form-field">
           <label for="planType">Tipo do Plano *</label>
-          <p-select 
+          <p-select
             formControlName="planType"
             [options]="planTypeOptions"
             optionLabel="label"
             optionValue="value"
             placeholder="Selecione o ciclo"
+            appendTo="body"
             styleClass="w-full">
           </p-select>
         </div>
@@ -188,18 +185,20 @@
             optionLabel="label"
             optionValue="value"
             placeholder="Selecione o pagamento"
+            appendTo="body"
             styleClass="w-full">
           </p-select>
         </div>
 
         <div class="form-field" *ngIf="editingUser()">
           <label for="accountStatus">Status da Conta *</label>
-          <p-select 
+          <p-select
             formControlName="accountStatus"
             [options]="statusOptions"
             optionLabel="label"
             optionValue="value"
             placeholder="Selecione o status"
+            appendTo="body"
             styleClass="w-full">
           </p-select>
         </div>
@@ -227,7 +226,7 @@
   <p-dialog 
     [(visible)]="showDetailsDialog"
     [modal]="true"
-    [style]="{width: '900px', maxHeight: '80vh'}"
+    [style]="{width: '750px', maxHeight: '80vh'}"
     header="Detalhes do Usuário">
     <div *ngIf="viewingUser()" class="user-details">
       <!-- Dados Pessoais -->
