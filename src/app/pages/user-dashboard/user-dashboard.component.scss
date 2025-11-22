@@ -272,11 +272,30 @@
   padding: 1.25rem 1.5rem;
 }
 
-/* header icon style */
-.upload-card .upload-header i.pi {
-  color:#7c3aed;
-  margin-right:.4rem;
-  font-size:1.05rem;
+/* upload header layout */
+.upload-card .upload-header {
+  padding: 1.25rem 1.5rem 0.5rem;
+
+  h3 {
+    display: flex;
+    align-items: center;
+    margin: 0 0 0.25rem 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #222;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #666;
+  }
+
+  i.pi {
+    color: #7c3aed;
+    margin-right: 0.5rem;
+    font-size: 1.1rem;
+  }
 }
 
 /* file path info inside upload */
@@ -303,12 +322,30 @@
   padding: 1.25rem 1.5rem;
 }
 
-/* gallery header icon style */
-.gallery-card .gallery-header i.pi {
-  color:#7c3aed;
-  margin-right:.35rem;
-  font-size:1.05rem;
-  vertical-align: middle;
+/* gallery header layout */
+.gallery-card .gallery-header {
+  padding: 1.25rem 1.5rem 0.5rem;
+
+  h3 {
+    display: flex;
+    align-items: center;
+    margin: 0 0 0.25rem 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #222;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #666;
+  }
+
+  i.pi {
+    color: #7c3aed;
+    margin-right: 0.5rem;
+    font-size: 1.1rem;
+  }
 }
 
 /* photos grid and photo-card */

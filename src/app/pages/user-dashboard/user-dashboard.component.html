@@ -148,10 +148,10 @@
           <p-card>
             <ng-template pTemplate="header">
               <div class="gallery-header">
-                <div>
-                  <i class="pi pi-folder-open" style="color:#7c3aed; margin-right:.35rem;"></i>
-                  <h3>{{ getCurrentFolderName() }}</h3>
-                </div>
+                <h3>
+                  <i class="pi pi-folder-open"></i>
+                  {{ getCurrentFolderName() }}
+                </h3>
                 <p>{{ photos().length }} {{ photos().length === 1 ? 'foto' : 'fotos' }} nesta pasta</p>
               </div>
             </ng-template>
