@@ -1,5 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { LanguageService } from '../../services/language.service';
 
 /**
@@ -15,4 +16,13 @@ import { LanguageService } from '../../services/language.service';
 })
 export class FooterComponent {
   public languageService = inject(LanguageService);
+  private router = inject(Router);
+
+  /**
+   * Redireciona para a página de funcionalidade em construção
+   */
+  goToEmConstrucao(event: Event): void {
+    event.preventDefault();
+    this.router.navigate(['/em-construcao']);
+  }
 }

@@ -259,4 +259,11 @@ export class AuthComponent {
       detail: message
     });
   }
+
+  /**
+   * Redireciona para a página de funcionalidade em construção
+   */
+  goToEmConstrucao(): void {
+    this.router.navigate(['/em-construcao']);
+  }
 }

@@ -48,7 +48,7 @@
           [label]="languageService.t('auth.forgotPassword')"
           [text]="true"
           [link]="true"
-          (onClick)="showRecoveryDialog.set(true)">
+          (onClick)="goToEmConstrucao()">
         </p-button>
 
       </div>
@@ -62,7 +62,7 @@
           [label]="languageService.t('auth.createNewAccount')"
           icon="pi pi-user-plus"
           [outlined]="true"
-          (onClick)="showSignupDialog.set(true)"
+          (onClick)="goToEmConstrucao()"
           styleClass="w-full">
         </p-button>
       </div>

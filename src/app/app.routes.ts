@@ -43,6 +43,10 @@ export const routes: Routes = [
     canActivate: [AuthGuard]
   },
   {
+    path: 'em-construcao',
+    loadComponent: () => import('./components/em-construcao/em-construcao.component').then(m => m.EmConstrucaoComponent)
+  },
+  {
     path: '**',
     redirectTo: ''
   }

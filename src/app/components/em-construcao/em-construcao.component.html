@@ -1,0 +1,27 @@
+<div class="em-construcao-container">
+  <div class="em-construcao-content">
+    <img
+      src="https://cdn-icons-png.flaticon.com/512/2936/2936690.png"
+      alt="{{ languageService.t('emConstrucao.title') }}"
+      class="construcao-image"
+    />
+
+    <h1 class="titulo">{{ languageService.t('emConstrucao.title') }}</h1>
+
+    <p class="mensagem">
+      {{ languageService.t('emConstrucao.message') }}
+    </p>
+
+    <div class="loading-bar">
+      <div class="loading-progress"></div>
+    </div>
+
+    <p-button
+      [label]="languageService.t('emConstrucao.backButton')"
+      icon="pi pi-arrow-left"
+      [outlined]="true"
+      (onClick)="goToHome()"
+      styleClass="btn-voltar">
+    </p-button>
+  </div>
+</div>

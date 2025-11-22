@@ -237,6 +237,7 @@ export class LanguageService {
         subtitle: 'Planos flexíveis para todas as necessidades',
         popular: 'Mais Popular',
         button: 'Começar Agora',
+        priceDisclaimer: 'Valores sob análise, sujeitos a alteração sem aviso prévio.',
         essencial: {
           name: 'Essencial',
           storage: '100 GB',
@@ -287,6 +288,11 @@ export class LanguageService {
         createSubfolder: 'Criar Subpasta',
         editFolder: 'Editar Pasta',
         deleteFolder: 'Excluir Pasta'
+      },
+      emConstrucao: {
+        title: 'Funcionalidade em Construção',
+        message: 'Estamos trabalhando para trazer essa funcionalidade para você em breve. Agradecemos sua paciência!',
+        backButton: 'Voltar para Home'
       },
       resetPassword: 'Redefinir Senha',
       resetPasswordDescription: 'Digite seu e-mail para receber o código de verificação',
@@ -501,6 +507,7 @@ export class LanguageService {
         subtitle: 'Flexible plans for all needs',
         popular: 'Most Popular',
         button: 'Get Started',
+        priceDisclaimer: 'Prices under review, subject to change without notice.',
         essencial: {
           name: 'Essential',
           storage: '100 GB',
@@ -551,6 +558,11 @@ export class LanguageService {
         createSubfolder: 'Create Subfolder',
         editFolder: 'Edit Folder',
         deleteFolder: 'Delete Folder'
+      },
+      emConstrucao: {
+        title: 'Feature Under Construction',
+        message: 'We are working to bring this feature to you soon. Thank you for your patience!',
+        backButton: 'Back to Home'
       },
       resetPassword: 'Reset Password',
       resetPasswordDescription: 'Enter your email to receive the verification code',
