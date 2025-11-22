@@ -285,49 +285,39 @@ export class UserDashboardComponent implements OnInit {
   }
 
   /**
-   * Obtém itens do menu de contexto para uma foto
+   * Obtém itens do menu de mover para uma foto (lista plana)
    */
-  getPhotoMenuItems(photo: Photo): MenuItem[] {
+  getMoveMenuItems(photo: Photo): MenuItem[] {
     const allFolders = this.folders();
 
-    // Constrói menu de pastas recursivamente
-    const buildFolderMenu = (parentId: string | null): MenuItem[] => {
-      return allFolders
+    // Lista plana de todas as pastas com indentação visual
+    const flatFolderList: MenuItem[] = [];
+
+    const buildFlatList = (parentId: string | null, level: number = 0): void => {
+      allFolders
         .filter(f => f.parentId === parentId)
-        .map(folder => ({
-          label: folder.name,
-          icon: 'pi pi-folder',
-          command: () => this.movePhoto(photo.id, folder.id),
-          items: buildFolderMenu(folder.id)
-        }));
+        .forEach(folder => {
+          const indent = level > 0 ? '\u00A0\u00A0'.repeat(level) : '';
+          flatFolderList.push({
+            label: `${indent}${folder.name}`,
+            icon: 'pi pi-folder',
+            command: () => this.movePhoto(photo.id, folder.id),
+            styleClass: 'move-menu-item'
+          });
+          buildFlatList(folder.id, level + 1);
+        });
     };
+
+    buildFlatList(null);
 
     return [
       {
-        label: 'Baixar',
-        icon: 'pi pi-download',
-        command: () => this.downloadPhoto(photo)
+        label: 'Raiz (Todas as fotos)',
+        icon: 'pi pi-folder-open',
+        command: () => this.movePhoto(photo.id, null),
+        styleClass: 'move-menu-item'
       },
-      {
-        label: 'Mover para',
-        icon: 'pi pi-arrows-alt',
-        items: [
-          {
-            label: 'Raiz',
-            icon: 'pi pi-folder',
-            command: () => this.movePhoto(photo.id, null)
-          },
-          ...buildFolderMenu(null)
-        ]
-      },
-      {
-        separator: true
-      },
-      {
-        label: 'Excluir',
-        icon: 'pi pi-trash',
-        command: () => this.deletePhoto(photo)
-      }
+      ...flatFolderList
     ];
   }
 

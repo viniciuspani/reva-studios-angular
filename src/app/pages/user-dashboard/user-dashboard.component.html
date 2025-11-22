@@ -161,13 +161,23 @@
               <div *ngFor="let photo of photos()" class="photo-card">
                 <img [src]="photo.dataUrl" [alt]="photo.name">
                 <div class="photo-overlay">
-                  <p-button icon="pi pi-download" [rounded]="true" size="small" (onClick)="downloadPhoto(photo)">
+                  <!-- Download -->
+                  <p-button icon="pi pi-download" [rounded]="true" size="small"
+                    (onClick)="downloadPhoto(photo)" styleClass="btn-download"
+                    pTooltip="Baixar" tooltipPosition="top">
                   </p-button>
-                  <p-button icon="pi pi-ellipsis-v" [rounded]="true" size="small" (onClick)="menu.toggle($event)"
-                    #menuButton>
+                  <!-- Mover -->
+                  <p-button icon="pi pi-arrows-alt" [rounded]="true" size="small"
+                    (onClick)="moveMenu.toggle($event)" styleClass="btn-move"
+                    pTooltip="Mover para pasta" tooltipPosition="top">
                   </p-button>
-                  <p-menu #menu [model]="getPhotoMenuItems(photo)" [popup]="true" appendTo="body">
+                  <p-menu #moveMenu [model]="getMoveMenuItems(photo)" [popup]="true" appendTo="body">
                   </p-menu>
+                  <!-- Deletar -->
+                  <p-button icon="pi pi-trash" [rounded]="true" size="small"
+                    (onClick)="deletePhoto(photo)" styleClass="btn-delete"
+                    pTooltip="Excluir" tooltipPosition="top">
+                  </p-button>
                 </div>
                 <div class="photo-name">{{ photo.name }}</div>
               </div>
