@@ -585,32 +585,38 @@ body {
   }
 }
 
-/* p-menu popup global */
+/* Sobrescrever variáveis CSS do PrimeNG para menus */
 .p-menu {
+  --p-navigation-item-focus-background: #d946ef !important;
+  --p-menu-item-focus-background: #d946ef;
+  --p-menu-item-focus-color: #fff;
+
   .p-menu-list { padding: 0.5rem 0; }
 
-  .p-menuitem {
-    .p-menuitem-content {
-      padding: 0.65rem 1rem;
-      cursor: pointer !important;
-      transition: background-color 0.15s ease;
-
-      &:hover {
-        background-color: #d946ef !important;
-        .p-menuitem-link, .p-menuitem-icon, .p-menuitem-text { color: #fff !important; }
-      }
-    }
-
-    .p-menuitem-link {
-      padding: 0;
-      background: transparent !important;
-      &:hover { background: transparent !important; }
-    }
-
-    .p-menuitem-icon { margin-right: 0.5rem; color: #6b7280; }
-    .p-menuitem-text { color: #333; }
+  .p-menuitem-content {
+    padding: 0.65rem 1rem;
+    cursor: pointer !important;
+    transition: background-color 0.15s ease;
   }
 
-  .p-menuitem.p-focus > .p-menuitem-content { background-color: #f3e8ff !important; }
-  .p-menuitem.p-focus > .p-menuitem-content:hover { background-color: #d946ef !important; }
+  .p-menuitem-icon { margin-right: 0.5rem; color: #6b7280; }
+  .p-menuitem-text { color: #333; }
+}
+
+/* Força hover rosa no menu - alta especificidade */
+html body .p-menu .p-menuitem .p-menuitem-content:hover,
+html body .p-menu .p-menuitem:hover .p-menuitem-content,
+html body .p-menu .p-menuitem.p-focus .p-menuitem-content {
+  background: #d946ef !important;
+  background-color: #d946ef !important;
+}
+
+html body .p-menu .p-menuitem .p-menuitem-content:hover span,
+html body .p-menu .p-menuitem:hover .p-menuitem-content span,
+html body .p-menu .p-menuitem.p-focus .p-menuitem-content span,
+html body .p-menu .p-menuitem .p-menuitem-content:hover .p-menuitem-text,
+html body .p-menu .p-menuitem:hover .p-menuitem-content .p-menuitem-text,
+html body .p-menu .p-menuitem .p-menuitem-content:hover .p-menuitem-icon,
+html body .p-menu .p-menuitem:hover .p-menuitem-content .p-menuitem-icon {
+  color: #fff !important;
 }

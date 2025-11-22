@@ -180,6 +180,22 @@
 }
 
 .photo-card:hover .photo-overlay { opacity: 1; }
+
+// Estilo do menu "Mover" da galeria
+::ng-deep .p-menu {
+  --p-menu-item-focus-background: #d946ef;
+  --p-menu-item-focus-color: #ffffff;
+  --p-navigation-item-focus-background: #d946ef;
+
+  .p-menu-item-content:hover {
+    background: #d946ef !important;
+
+    .p-menu-item-label,
+    .p-menu-item-icon {
+      color: #ffffff !important;
+    }
+  }
+}
 .photo-name { position: absolute; left: 0; right: 0; bottom: 0; padding: .5rem; background: rgba(0,0,0,.8); color: #fff; font-size: .75rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 
 @media (max-width: 1024px) { .main-grid { grid-template-columns: 1fr; } .folders-card { max-height: none; } }
