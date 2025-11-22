@@ -17,17 +17,17 @@
 // Marca d'água com logo
 .watermark {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   z-index: 0;
   pointer-events: none;
-
-  img {
-    width: 500px;
-    height: auto;
-    opacity: 0.05;
-  }
+  background-image: url('/assets/logo-reva-studios.png');
+  background-repeat: repeat;
+  background-position: center center;
+  background-size: 60%;
+  opacity: 0.08;
 }
 
 // Aviso de preços
