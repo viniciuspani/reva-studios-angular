@@ -1,33 +1,5 @@
-// Estilos do rodapé
-.footer {
-  padding: 1rem 1rem;
-  background-color: hsl(270, 50%, 20%);
-  color: white;
-}
-
-.footer-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  text-align: center;
-}
-
-.footer-text {
-  margin-bottom: 1rem;
-}
-
-.social-links {
-  display: flex;
-  gap: 1.5rem;
-  justify-content: center;
-  align-items: center;
-}
-
-.social-link {
-  color: white;
-  transition: color 0.3s;
-  font-size: 1.5rem;
-  
-  &:hover {
-    color: hsl(320, 80%, 60%);
-  }
-}
+.footer { padding: 1rem; background-color: hsl(270, 50%, 20%); color: white; }
+.footer-container { max-width: 1200px; margin: 0 auto; text-align: center; }
+.footer-text { margin-bottom: 1rem; }
+.social-links { display: flex; gap: 1.5rem; justify-content: center; align-items: center; }
+.social-link { color: white; transition: color 0.3s; font-size: 1.5rem; &:hover { color: hsl(320, 80%, 60%); } }

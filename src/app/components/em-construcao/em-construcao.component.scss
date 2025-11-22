@@ -1,95 +1,16 @@
-.em-construcao-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 60vh;
-  padding: 2rem;
-}
+.em-construcao-container { display: flex; justify-content: center; align-items: center; min-height: 60vh; padding: 2rem; }
+.em-construcao-content { display: flex; flex-direction: column; align-items: center; text-align: center; max-width: 500px; }
 
-.em-construcao-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  max-width: 500px;
-}
+.construcao-image { width: 180px; height: 180px; margin-bottom: 2rem; animation: float 3s ease-in-out infinite; }
+@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 
-.construcao-image {
-  width: 180px;
-  height: 180px;
-  margin-bottom: 2rem;
-  animation: float 3s ease-in-out infinite;
-}
+.titulo { font-size: 1.75rem; font-weight: 600; color: #333; margin-bottom: 1rem; }
+.mensagem { font-size: 1rem; color: #666; line-height: 1.6; margin-bottom: 2rem; }
 
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
+.loading-bar { width: 100%; max-width: 300px; height: 8px; background-color: #e0e0e0; border-radius: 4px; overflow: hidden; }
+.loading-progress { width: 30%; height: 100%; background: linear-gradient(90deg, #f59e0b, #f97316); border-radius: 4px; animation: loading 2s ease-in-out infinite; }
+@keyframes loading { 0% { width: 10%; } 50% { width: 70%; } 100% { width: 10%; } }
 
-.titulo {
-  font-size: 1.75rem;
-  font-weight: 600;
-  color: #333;
-  margin-bottom: 1rem;
-}
+::ng-deep .btn-voltar { margin-top: 2rem; }
 
-.mensagem {
-  font-size: 1rem;
-  color: #666;
-  line-height: 1.6;
-  margin-bottom: 2rem;
-}
-
-.loading-bar {
-  width: 100%;
-  max-width: 300px;
-  height: 8px;
-  background-color: #e0e0e0;
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.loading-progress {
-  width: 30%;
-  height: 100%;
-  background: linear-gradient(90deg, #f59e0b, #f97316);
-  border-radius: 4px;
-  animation: loading 2s ease-in-out infinite;
-}
-
-::ng-deep .btn-voltar {
-  margin-top: 2rem;
-}
-
-@keyframes loading {
-  0% {
-    width: 10%;
-  }
-  50% {
-    width: 70%;
-  }
-  100% {
-    width: 10%;
-  }
-}
-
-// Responsividade
-@media (max-width: 576px) {
-  .construcao-image {
-    width: 140px;
-    height: 140px;
-  }
-
-  .titulo {
-    font-size: 1.4rem;
-  }
-
-  .mensagem {
-    font-size: 0.9rem;
-  }
-}
+@media (max-width: 576px) { .construcao-image { width: 140px; height: 140px; } .titulo { font-size: 1.4rem; } .mensagem { font-size: 0.9rem; } }

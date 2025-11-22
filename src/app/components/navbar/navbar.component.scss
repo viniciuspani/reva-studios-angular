@@ -1,5 +1,5 @@
 .navbar {
-  background: linear-gradient(90deg,#34194E 100%, #5B1F79 10%);
+  background: linear-gradient(90deg, #34194E 100%, #5B1F79 10%);
   padding: 0;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   position: sticky;
@@ -20,30 +20,15 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    
     color: white;
     font-size: 1.5rem;
     font-weight: 700;
     transition: opacity 0.3s ease;
 
-    &:hover {
-      opacity: 0.9;
-    }
-
-    .brand-logo {
-      height: 45px;
-      width: auto;
-      object-fit: contain;
-    }
-
-    .brand-icon {
-      font-size: 1.75rem;
-    }
-
-    .brand-text {
-      font-size: 1.5rem;
-      letter-spacing: -0.02em;
-    }
+    &:hover { opacity: 0.9; }
+    .brand-logo { height: 45px; width: auto; object-fit: contain; }
+    .brand-icon { font-size: 1.75rem; }
+    .brand-text { font-size: 1.5rem; letter-spacing: -0.02em; }
   }
 
   .navbar-menu {
@@ -54,51 +39,27 @@
     margin: 0;
     padding: 0;
 
-    .navbar-item {
-      a {
-        color: white;
-        text-decoration: none;
-        font-weight: 500;
-        font-size: 1rem;
-        padding: 0.5rem 0;
-        position: relative;
-        transition: all 0.3s ease;
-        cursor: pointer;
+    .navbar-item a {
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 1rem;
+      padding: 0.5rem 0;
+      position: relative;
+      transition: all 0.3s ease;
+      cursor: pointer;
 
-        &:hover {
-          color: #B9399C;
+      &:hover {
+        color: #B9399C;
+        &::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 100%; height: 2px; background: #B9399C; border-radius: 2px; }
+      }
 
-          &::after {
-            content: '';
-            position: absolute;
-            bottom: -4px;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background: #B9399C;
-            border-radius: 2px;
-          }
-        }
-
-        &.active {
-          font-weight: 600;
-
-          &::after {
-            content: '';
-            position: absolute;
-            bottom: -4px;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background: white;
-            border-radius: 2px;
-          }
-        }
+      &.active {
+        font-weight: 600;
+        &::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 100%; height: 2px; background: white; border-radius: 2px; }
       }
     }
-  }
 
-  .navbar-menu {
     .user-info {
       display: flex;
       align-items: center;
@@ -111,15 +72,13 @@
         display: flex;
         align-items: center;
         gap: 0.5rem;
-
-        i {
-          font-size: 1.25rem;
-        }
+        i { font-size: 1.25rem; }
       }
     }
+  }
 
-    // Estilização do p-button de idioma
-    ::ng-deep .language-button {
+  ::ng-deep {
+    .language-button {
       background: transparent !important;
       border: none !important;
       color: #FCFBFD !important;
@@ -127,84 +86,36 @@
       font-weight: 500 !important;
       font-size: 0.95rem !important;
       transition: all 0.3s ease !important;
-
-      .p-button-label {
-        font-weight: 500 !important;
-      }
-
-      .p-button-icon {
-        font-size: 1.25rem !important;
-      }
-
-      &:hover {
-        background: #EB47B4 !important;
-        color: #FCFBFD !important;
-        border: 1px solid #EB47B4 !important;
-      }
-
-      &:focus {
-        box-shadow: none !important;
-      }
+      .p-button-label { font-weight: 500 !important; }
+      .p-button-icon { font-size: 1.25rem !important; }
+      &:hover { background: #EB47B4 !important; border: 1px solid #EB47B4 !important; }
+      &:focus { box-shadow: none !important; }
     }
 
-    // Estilização do p-button de login
-    ::ng-deep .login-button {
+    .login-button {
       background: #A429E2 !important;
       border: none !important;
       color: white !important;
       padding: 0.65rem 1.75rem !important;
       border-radius: 8px !important;
       font-weight: 600 !important;
-      font-size: 1rem !important;
-      transition: all 0.3s ease !important;
       box-shadow: 0 2px 8px rgba(217, 70, 239, 0.3) !important;
-
-      .p-button-label {
-        font-weight: 600 !important;
-      }
-
-      &:hover {
-        background: #EB47B4 !important;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(217, 70, 239, 0.4) !important;
-      }
-
-      &:focus {
-        box-shadow: 0 0 0 2px black, 0 0 0 4px #EB47B4 !important;
-      }
+      &:hover { background: #EB47B4 !important; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(217, 70, 239, 0.4) !important; }
+      &:focus { box-shadow: 0 0 0 2px black, 0 0 0 4px #EB47B4 !important; }
     }
 
-    // Estilização do p-button de logout
-    ::ng-deep .logout-button {
+    .logout-button {
       background: rgba(255, 255, 255, 0.1) !important;
       border: 1px solid rgba(255, 255, 255, 0.2) !important;
       color: white !important;
       padding: 0.5rem 1.25rem !important;
       border-radius: 8px !important;
       font-weight: 500 !important;
-      font-size: 0.95rem !important;
-      transition: all 0.3s ease !important;
-
-      .p-button-label {
-        font-weight: 500 !important;
-      }
-
-      .p-button-icon {
-        font-size: 1.1rem !important;
-      }
-
-      &:hover {
-        background: rgba(255, 255, 255, 0.15) !important;
-        border-color: rgba(255, 255, 255, 0.3) !important;
-      }
-
-      &:focus {
-        box-shadow: none !important;
-      }
+      &:hover { background: rgba(255, 255, 255, 0.15) !important; border-color: rgba(255, 255, 255, 0.3) !important; }
+      &:focus { box-shadow: none !important; }
     }
   }
 
-  // Mobile Menu Toggle
   .mobile-menu-button {
     display: none;
     background: transparent;
@@ -214,11 +125,11 @@
     cursor: pointer;
     padding: 0.5rem;
   }
+}
 
-  @media (max-width: 992px) {
-    .navbar-container {
-      padding: 0 1.5rem;
-    }
+@media (max-width: 992px) {
+  .navbar {
+    .navbar-container { padding: 0 1.5rem; }
 
     .navbar-menu {
       position: fixed;
@@ -226,7 +137,7 @@
       left: -100%;
       width: 280px;
       height: calc(100vh - 70px);
-      background: linear-gradient(180deg, #5b21b6 0%, #6b21a8 100%);
+      background: linear-gradient(180deg, #5b21b6, #6b21a8);
       flex-direction: column;
       align-items: flex-start;
       padding: 2rem 1.5rem;
@@ -234,61 +145,22 @@
       transition: left 0.3s ease;
       box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
 
-      &.active {
-        left: 0;
-      }
-
-      .navbar-item {
-        width: 100%;
-
-        a {
-          display: block;
-          padding: 0.75rem 0;
-          font-size: 1.1rem;
-        }
-      }
+      &.active { left: 0; }
+      .navbar-item { width: 100%; a { display: block; padding: 0.75rem 0; font-size: 1.1rem; } }
     }
 
-    .mobile-menu-button {
-      display: block;
-    }
-
-    .navbar-actions {
-      gap: 0.75rem;
-
-      .language-button span {
-        display: none;
-      }
-    }
+    .mobile-menu-button { display: block; }
+    .navbar-actions { gap: 0.75rem; .language-button span { display: none; } }
   }
+}
 
-  @media (max-width: 576px) {
-    .navbar-container {
-      padding: 0 1rem;
-      height: 60px;
-    }
-
-    .navbar-brand {
-      font-size: 1.25rem;
-
-      .brand-icon {
-        font-size: 1.5rem;
-      }
-    }
-
+@media (max-width: 576px) {
+  .navbar {
+    .navbar-container { padding: 0 1rem; height: 60px; }
+    .navbar-brand { font-size: 1.25rem; .brand-icon { font-size: 1.5rem; } }
     .navbar-actions {
-      .login-button {
-        padding: 0.5rem 1.25rem;
-        font-size: 0.9rem;
-      }
-
-      .user-name span {
-        display: none;
-      }
-
-      .logout-button span {
-        display: none;
-      }
+      .login-button { padding: 0.5rem 1.25rem; font-size: 0.9rem; }
+      .user-name span, .logout-button span { display: none; }
     }
   }
 }
