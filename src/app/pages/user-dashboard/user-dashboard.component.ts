@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal, ViewChild, ElementRef } from '@angular/core';
+import { Component, inject, OnInit, signal, ViewChild, ElementRef, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { CardModule } from 'primeng/card';
@@ -11,6 +11,7 @@ import { MenuModule } from 'primeng/menu';
 import { MenuItem } from 'primeng/api';
 import { TreeModule } from 'primeng/tree';
 import { TreeNode } from 'primeng/api';
+import { TooltipModule } from 'primeng/tooltip';
 import { NavbarComponent } from '../../components/navbar/navbar.component';
 import { StorageService } from '../../services/storage.service';
 import { LanguageService } from '../../services/language.service';
@@ -34,11 +35,13 @@ import { Folder } from '../../models/folder.model';
     ToastModule,
     MenuModule,
     TreeModule,
+    TooltipModule,
     NavbarComponent
   ],
   providers: [MessageService],
   templateUrl: './user-dashboard.component.html',
-  styleUrls: ['./user-dashboard.component.scss']
+  styleUrls: ['./user-dashboard.component.scss'],
+  encapsulation: ViewEncapsulation.None
 })
 export class UserDashboardComponent implements OnInit {
   private router = inject(Router);
@@ -105,6 +108,7 @@ export class UserDashboardComponent implements OnInit {
           label: folder.name,
           data: folder.id,
           icon: 'pi pi-folder',
+          expanded: true,  // Expande todos os nós por padrão
           children: buildNode(folder.id)
         }));
     };
@@ -141,6 +145,61 @@ export class UserDashboardComponent implements OnInit {
     this.storageService.createFolder(user.id, folderName.trim(), this.selectedFolderId());
     this.loadData();
     this.showSuccess('Pasta criada', `Pasta "${folderName}" criada com sucesso`);
+  }
+
+  /**
+   * Cria subpasta dentro de uma pasta existente
+   */
+  createSubfolder(parentFolderId: string, event: Event): void {
+    event.stopPropagation();
+    const user = this.currentUser();
+    if (!user) return;
+
+    const folderName = prompt('Nome da subpasta:');
+    if (!folderName || !folderName.trim()) return;
+
+    this.storageService.createFolder(user.id, folderName.trim(), parentFolderId);
+    this.loadData();
+    this.showSuccess('Subpasta criada', `Subpasta "${folderName}" criada com sucesso`);
+  }
+
+  /**
+   * Edita nome de uma pasta
+   */
+  editFolder(folderId: string, event: Event): void {
+    event.stopPropagation();
+    const folder = this.folders().find(f => f.id === folderId);
+    if (!folder) return;
+
+    const newName = prompt('Novo nome da pasta:', folder.name);
+    if (!newName || !newName.trim() || newName.trim() === folder.name) return;
+
+    this.storageService.renameFolder(folderId, newName.trim());
+    this.loadData();
+    this.showSuccess('Pasta renomeada', `Pasta renomeada para "${newName}"`);
+  }
+
+  /**
+   * Exclui uma pasta
+   */
+  deleteFolder(folderId: string, event: Event): void {
+    event.stopPropagation();
+    const folder = this.folders().find(f => f.id === folderId);
+    if (!folder) return;
+
+    if (!confirm(`Tem certeza que deseja excluir a pasta "${folder.name}"? Todas as fotos dentro dela serão movidas para a raiz.`)) {
+      return;
+    }
+
+    this.storageService.deleteFolder(folderId);
+    this.loadData();
+
+    // Se a pasta excluída estava selecionada, volta para "Todas as fotos"
+    if (this.selectedFolderId() === folderId) {
+      this.selectedFolderId.set(null);
+    }
+
+    this.showSuccess('Pasta excluída', `Pasta "${folder.name}" excluída com sucesso`);
   }
 
   /**

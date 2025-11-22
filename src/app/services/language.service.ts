@@ -283,6 +283,11 @@ export class LanguageService {
           ]
         }
       },
+      userDashboard: {
+        createSubfolder: 'Criar Subpasta',
+        editFolder: 'Editar Pasta',
+        deleteFolder: 'Excluir Pasta'
+      },
       resetPassword: 'Redefinir Senha',
       resetPasswordDescription: 'Digite seu e-mail para receber o código de verificação',
       email: 'E-mail',
@@ -541,6 +546,11 @@ export class LanguageService {
             'Team management'
           ]
         }
+      },
+      userDashboard: {
+        createSubfolder: 'Create Subfolder',
+        editFolder: 'Edit Folder',
+        deleteFolder: 'Delete Folder'
       },
       resetPassword: 'Reset Password',
       resetPasswordDescription: 'Enter your email to receive the verification code',

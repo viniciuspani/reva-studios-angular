@@ -65,22 +65,60 @@
         <ng-template pTemplate="header">
           <div class="folders-header">
             <h3>Pastas</h3>
-            <p-button 
+            <p-button
               icon="pi pi-plus"
               [rounded]="true"
               [text]="true"
               size="small"
               (onClick)="createFolder()"
-              pTooltip="Nova Pasta">
+              pTooltip="Nova Pasta"
+              styleClass="add-folder-btn">
             </p-button>
           </div>
         </ng-template>
-        
-        <p-tree 
+
+        <p-tree
           [value]="folderNodes"
           selectionMode="single"
           (onNodeSelect)="onFolderSelect($event)"
-          styleClass="w-full border-none">
+          styleClass="w-full border-none folders-tree">
+          <ng-template let-node pTemplate="default">
+            <div class="custom-tree-node">
+              <span class="folder-label">{{ node.label }}</span>
+              <div class="folder-actions" *ngIf="node.data !== null" (click)="$event.stopPropagation()">
+                <p-button
+                  icon="pi pi-folder-plus"
+                  [rounded]="true"
+                  [text]="true"
+                  size="small"
+                  (onClick)="createSubfolder(node.data, $event)"
+                  [pTooltip]="languageService.t('userDashboard.createSubfolder')"
+                  tooltipPosition="top"
+                  styleClass="folder-action-btn">
+                </p-button>
+                <p-button
+                  icon="pi pi-pencil"
+                  [rounded]="true"
+                  [text]="true"
+                  size="small"
+                  (onClick)="editFolder(node.data, $event)"
+                  [pTooltip]="languageService.t('userDashboard.editFolder')"
+                  tooltipPosition="top"
+                  styleClass="folder-action-btn">
+                </p-button>
+                <p-button
+                  icon="pi pi-trash"
+                  [rounded]="true"
+                  [text]="true"
+                  size="small"
+                  (onClick)="deleteFolder(node.data, $event)"
+                  [pTooltip]="languageService.t('userDashboard.deleteFolder')"
+                  tooltipPosition="top"
+                  styleClass="folder-action-btn folder-delete-btn">
+                </p-button>
+              </div>
+            </div>
+          </ng-template>
         </p-tree>
       </p-card>
 
