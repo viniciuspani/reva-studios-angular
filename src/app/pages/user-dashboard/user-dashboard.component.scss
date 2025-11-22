@@ -1,12 +1,14 @@
-/* =========================================================
-   USER DASHBOARD — SCSS LIMPO, SEGURO, NÃO QUEBRA CARDS
-   Pis: sidebar tree 100% funcional, CRUD correto, sem overflow
-   ========================================================= */
+/* FINAL SCSS - substituir todo o arquivo */
 
-/* === Base layout =================================================== */
+/* Palette
+   base: #7c3aed
+   hover: #d946ef
+*/
+
+/* === Base layout === */
 .user-dashboard {
   min-height: 100vh;
-  background-color: hsl(0, 0%, 98%);
+  background-color: hsl(0,0%,98%);
 }
 
 .dashboard-container {
@@ -15,23 +17,7 @@
   margin: 0 auto;
 }
 
-.dashboard-header {
-  margin-bottom: 2rem;
-
-  h1 {
-    font-size: 2rem;
-    font-weight: 700;
-    margin-bottom: .5rem;
-    color: hsl(270,15%,10%);
-  }
-
-  p {
-    color: hsl(270,15%,40%);
-    margin: 0;
-  }
-}
-
-/* === Estatísticas =================================================== */
+/* Top cards */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit,minmax(280px,1fr));
@@ -40,139 +26,151 @@
 
   ::ng-deep .p-card {
     border-radius: .75rem;
-    box-shadow: 0 1px 3px rgba(0,0,0,.07);
+    background: #fff;
+    padding: 1rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+    border: 1px solid rgba(0,0,0,0.03);
   }
 
-  .card-icon {
-    height: 3rem; width: 3rem;
-    border-radius: 9999px;
-    display:flex; align-items:center; justify-content:center;
-    background: linear-gradient(45deg,hsl(280,85%,55%),hsl(320,80%,60%));
-    margin: 0 auto 1rem;
-
-    i { color:#fff; font-size:1.5rem; }
-  }
-
-  h3 { margin:0 0 .25rem; }
+  .card-icon { height:3rem; width:3rem; border-radius:9999px; display:flex; align-items:center; justify-content:center; background: linear-gradient(45deg,#7c3aed,#a78bfa); margin:0 auto 1rem; i{ color:#fff;} }
 }
 
-/* === Main grid ====================================================== */
+/* Main layout */
 .main-grid {
-  display: grid;
+  display:grid;
   grid-template-columns: 280px 1fr;
-  gap: 1.5rem;
+  gap:1.5rem;
 }
 
-/* ====================================================================
-   FOLDERS SIDEBAR — PASTAS
-   ==================================================================== */
+/* ===========================
+   FOLDERS SIDEBAR (LEFT)
+   =========================== */
 
 .folders-card {
-  border-radius:.75rem;
+  min-width: 277.5px;
+  min-height: 110px;
+  border-radius: .75rem;
+  padding: 0;
 
+  /* style only the p-card inside this folders-card */
   > ::ng-deep .p-card {
     border-radius:.75rem;
+    background:#fff;
     box-shadow:0 1px 6px rgba(0,0,0,.06);
-    border:1px solid rgba(124,58,237,.06);
+    border:1px solid rgba(124,58,237,0.06);
   }
 
   .folders-header {
-    padding:1rem 1.25rem;
-    display:flex; align-items:center; justify-content:space-between;
-    border-bottom:1px solid rgba(0,0,0,.04);
+    padding: 1rem 1.25rem;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    border-bottom:1px solid rgba(0,0,0,0.04);
 
-    h3 { margin:0; font-size:1rem; font-weight:600; }
-    .add-folder-btn:hover {
-      background:#d946ef !important; color:#fff !important;
-    }
+    h3 { margin:0; font-size:1rem; font-weight:600; color: #222; }
+    .add-folder-btn { transition: all .12s; &:hover{ background:#7c3aed!important; color:#fff!important; border-radius:.375rem; } }
   }
+
+  /* tree body padding */
+  ::ng-deep .p-card-body { padding: 0.5rem; }
 }
 
-/* ====================================================================
-   P-TREE — ISOLADO! NÃO QUEBRA OUTROS COMPONENTES
-   IMPORTANTE: styleClass="folders-tree" deve estar no p-tree no HTML
-   ==================================================================== */
+/* ===========================
+   P-TREE STYLES (SCOPED)
+   - p-tree must have styleClass="folders-tree"
+   - selectors are prefixed with .folders-card to avoid leakage
+   =========================== */
 
-.p-tree.folders-tree {
-  --p-tree-node-hover-background:#d946ef;
-  --p-tree-node-hover-color:#fff;
-  --p-tree-node-selected-background:#d946ef;
-  --p-tree-node-selected-color:#fff;
-  --p-tree-node-icon-color:#fff;
-  --p-tree-node-icon-hover-color:#fff;
-  --p-tree-node-icon-selected-color:#fff;
+.folders-card .p-tree.folders-tree {
+  --p-tree-node-hover-background: #d946ef;
+  --p-tree-node-hover-color: #fff;
+  --p-tree-node-selected-background: #7c3aed;
+  --p-tree-node-selected-color: #fff;
+  --p-tree-node-icon-color: #fff;
+  --p-tree-node-icon-hover-color: #fff;
+  --p-tree-node-icon-selected-color: #fff;
 
   border:none;
   background:transparent;
-  padding:.75rem .5rem;
+  padding:0;
 }
 
-/* Evita barra horizontal — SEM esconder os botões */
-.p-tree.folders-tree,
-.p-tree.folders-tree .p-tree-container,
-.p-tree.folders-tree .p-tree-node,
-.p-tree.folders-tree .p-tree-node-content {
-  max-width:100%;
-  overflow-x: clip; /* NÃO usa hidden — clip impede scroll mas mostra conteúdo */
-  overflow-y: visible;
+/* block-level guards to avoid horizontal scroll and clipping issues */
+// .folders-card .p-tree.folders-tree,
+// .folders-card .p-tree.folders-tree .p-tree-container,
+// .folders-card .p-tree.folders-tree .p-tree-root,
+// .folders-card .p-tree.folders-tree .p-tree-node,
+// .folders-card .p-tree.folders-tree .p-tree-node-content {
+//   max-width: 100%;
+//   overflow-x: clip; /* prevents horizontal scrollbar without hiding overlays */
+//   overflow-y: visible;
+//   box-sizing: border-box;
+// }
+
+/* Mantém visibilidade dos ícones sem quebrar layout */
+.folders-card .p-tree.folders-tree .p-tree-node {
+  overflow: visible !important;
 }
 
-/* Node content layout */
-.p-tree.folders-tree .p-tree-node-content {
+.folders-card .p-tree.folders-tree .p-tree-node-content {
+  overflow: visible !important;
+}
+
+/* node layout */
+.folders-card .p-tree.folders-tree .p-tree-node-content {
   display:flex !important;
   align-items:center !important;
   gap:.5rem !important;
   flex-wrap:nowrap !important;
   min-width:0 !important;
-  padding:.65rem .55rem !important;
-  border-radius:.5rem !important;
+  padding:.6rem .5rem !important;
+  border-radius:.5rem;
+  position:relative; /* so that actions (z-index) are above */
 }
 
-/* Toggler e ícone nunca encolhem */
-.p-tree.folders-tree .p-tree-node-toggle-button,
-.p-tree.folders-tree .p-tree-node-icon {
+/* ensure toggle icon and node icon don't shrink */
+.folders-card .p-tree.folders-tree .p-tree-node-toggle-button,
+.folders-card .p-tree.folders-tree .p-tree-node-icon {
   flex-shrink:0 !important;
 }
 
-/* Template customizado */
-.custom-tree-node {
+/* our template wrapper */
+.folders-card .custom-tree-node {
   display:flex !important;
   align-items:center !important;
   justify-content:space-between !important;
   gap:.5rem !important;
   width:100%;
   min-width:0;
-  overflow-x:clip; /* necessário para evitar barra horizontal */
-  overflow-y:visible;
+  overflow:visible; /* allow actions to show */
 }
 
-/* Nome da pasta */
-.folder-label {
+/* label with ellipsis */
+.folders-card .custom-tree-node .folder-label {
   flex:1 1 auto !important;
   min-width:0 !important;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  white-space:nowrap !important;
+  padding-left:.25rem;
 }
 
-/* ====================================================================
-   CRUD — BOTÕES DE AÇÃO
-   ==================================================================== */
-
-/* Container das ações */
-.p-tree.folders-tree .folder-actions {
+/* actions container */
+.folders-card .p-tree.folders-tree .folder-actions {
   display:flex;
-  gap:.4rem;
+  gap:.35rem;
   flex-shrink:0;
+  white-space:nowrap;
   opacity:0;
   pointer-events:none;
-  white-space:nowrap;
-  transition:opacity .12s ease;
+  transition: opacity .12s ease;
   align-items:center;
+  z-index: 20; /* ensure above background */
 }
 
-/* Botões */
-.p-tree.folders-tree .folder-action-btn {
+/* action buttons sizing - target p-button rendered elements */
+.folders-card .p-tree.folders-tree .folder-action-btn,
+.folders-card .p-tree.folders-tree .folder-action-btn.p-button {
   width:1.75rem !important;
   height:1.75rem !important;
   min-width:1.75rem !important;
@@ -183,99 +181,132 @@
   flex-shrink:0 !important;
 }
 
-/* Delete hover */
-.p-tree.folders-tree .folder-delete-btn:hover {
-  background-color:rgba(239,68,68,.12) !important;
+/* make sure the icon inside p-button is visible and white on hover/select */
+.folders-card .p-tree.folders-tree .p-button.folder-action-btn .p-button-icon,
+.folders-card .p-tree.folders-tree .p-button.folder-action-btn .pi {
+  color: inherit;
 }
 
-/* Mostrar CRUD no hover */
-.p-tree.folders-tree .p-tree-node-content:hover .folder-actions {
+/* delete button hover color */
+.folders-card .p-tree.folders-tree .folder-delete-btn:hover,
+.folders-card .p-tree.folders-tree .p-button.folder-delete-btn:hover {
+  background-color: rgba(239,68,68,0.12) !important;
+}
+
+/* reveal actions for all levels: node hover or selected
+   include both p-highlight and p-tree-node-selected to be safe across versions */
+.folders-card .p-tree.folders-tree li.p-tree-node .p-tree-node-content:hover .folder-actions,
+.folders-card .p-tree.folders-tree li.p-tree-node .p-tree-node-content.p-highlight .folder-actions,
+.folders-card .p-tree.folders-tree li.p-tree-node .p-tree-node-content.p-tree-node-selected .folder-actions,
+.folders-card .p-tree.folders-tree .p-tree-node-children li.p-tree-node .p-tree-node-content:hover .folder-actions,
+.folders-card .p-tree.folders-tree .p-tree-node-children li.p-tree-node .p-tree-node-content.p-highlight .folder-actions,
+.folders-card .p-tree.folders-tree .p-tree-node-children li.p-tree-node .p-tree-node-content.p-tree-node-selected .folder-actions {
   opacity:1 !important;
   pointer-events:auto !important;
 }
 
-/* Mostrar CRUD quando selecionado */
-.p-tree.folders-tree .p-tree-node-content.p-tree-node-selected .folder-actions {
-  opacity:1 !important;
-  pointer-events:auto !important;
+/* hover & selected bg color */
+.folders-card .p-tree.folders-tree .p-tree-node-content:hover {
+  background: #d946ef !important;
+  color: #fff !important;
 }
 
-/* ====================================================================
-   Hover / Selected — cores corretas e ícones brancos
-   ==================================================================== */
-
-.p-tree.folders-tree .p-tree-node-content:hover,
-.p-tree.folders-tree .p-tree-node-content.p-tree-node-selected {
-  background:#d946ef !important;
-  color:#fff !important;
-  box-shadow:0 2px 6px rgba(217,70,239,.12);
+.folders-card .p-tree.folders-tree .p-tree-node-content.p-highlight,
+.folders-card .p-tree.folders-tree .p-tree-node-content.p-tree-node-selected {
+  background: #7c3aed !important;
+  color: #fff !important;
+  box-shadow: 0 2px 6px rgba(124,58,237,0.12);
 }
 
-.p-tree.folders-tree .p-tree-node-content:hover .p-tree-node-icon,
-.p-tree.folders-tree .p-tree-node-content.p-tree-node-selected .p-tree-node-icon,
-.p-tree.folders-tree .p-tree-node-content:hover .p-tree-node-toggle-icon,
-.p-tree.folders-tree .p-tree-node-content.p-tree-node-selected .p-tree-node-toggle-icon,
-.p-tree.folders-tree .p-tree-node-content:hover .p-button-icon,
-.p-tree.folders-tree .p-tree-node-content.p-tree-node-selected .p-button-icon {
+/* ensure icons and p-button icons turn white when hover/selected */
+.folders-card .p-tree.folders-tree .p-tree-node-content:hover .p-tree-node-icon,
+.folders-card .p-tree.folders-tree .p-tree-node-content.p-highlight .p-tree-node-icon,
+.folders-card .p-tree.folders-tree .p-tree-node-content.p-tree-node-selected .p-tree-node-icon,
+.folders-card .p-tree.folders-tree .p-tree-node-content:hover .p-button-icon,
+.folders-card .p-tree.folders-tree .p-tree-node-content.p-highlight .p-button-icon,
+.folders-card .p-tree.folders-tree .p-tree-node-content.p-tree-node-selected .p-button-icon {
   color:#fff !important;
   fill:#fff !important;
 }
 
-/* ====================================================================
-   GALERIA DE FOTOS — NÃO ALTERADO, NÃO AFETADO PELO TREE
-   (mantém seu layout original)
-   ==================================================================== */
+/* children indentation without increasing total width */
+.folders-card .p-tree.folders-tree .p-tree-node-children { padding-left:1rem; max-width:100%; overflow-x:clip; }
 
-.gallery-section ::ng-deep .p-card {
+/* ===========================
+   UPLOAD CARD (center)
+   - scoped with .upload-card wrapper in HTML
+   =========================== */
+
+/* style the p-card inside upload-card */
+.upload-card ::ng-deep .p-card,
+.upload-card ::ng-deep .p-card-body {
   border-radius:.75rem;
-  box-shadow:0 1px 3px rgba(0,0,0,.1);
+  background:#fff;
+  box-shadow:0 1px 6px rgba(0,0,0,.06);
+  border:1px solid rgba(124,58,237,0.03);
+  padding:1.25rem 1.5rem;
+  margin-bottom: 1rem;
 }
 
-/* Miniaturas */
-.photos-grid {
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
-  gap:1rem;
+/* header icon style */
+.upload-card .upload-header i.pi {
+  color:#7c3aed;
+  margin-right:.4rem;
+  font-size:1.05rem;
 }
 
-.photo-card {
-  position:relative;
-  aspect-ratio:1;
+/* file path info inside upload */
+.file-path-info .p-card {
   border-radius:.5rem;
-  overflow:hidden;
-  background:hsl(270,20%,96%);
+  border:1px solid rgba(124,58,237,0.06);
+  box-shadow:0 1px 6px rgba(0,0,0,0.04);
+  background:#fff;
 }
 
-/* Overlay */
-.photo-overlay {
-  position:absolute;
-  inset:0;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:.5rem;
-  background:rgba(0,0,0,.6);
-  opacity:0; transition:.25s;
+/* ===========================
+   GALLERY CARD
+   - scoped with .gallery-card wrapper in HTML
+   =========================== */
 
-  .p-button { box-shadow:0 2px 4px rgba(0,0,0,.25); }
+.gallery-card ::ng-deep .p-card,
+.gallery-card ::ng-deep .p-card-body {
+  border-radius:.75rem;
+  background:#fff;
+  box-shadow:0 1px 6px rgba(0,0,0,.06);
+  border:1px solid rgba(124,58,237,0.03);
+  padding:1.25rem 1.5rem;
+  margin-top: 1rem;
 }
 
+/* gallery header icon style */
+.gallery-card .gallery-header i.pi {
+  color:#7c3aed;
+  margin-right:.35rem;
+  font-size:1.05rem;
+  vertical-align: middle;
+}
+
+/* photos grid and photo-card */
+.photos-grid { display:grid; grid-template-columns: repeat(auto-fill,minmax(200px,1fr)); gap:1rem; }
+.photo-card { position:relative; aspect-ratio:1; border-radius:.5rem; overflow:hidden; background:hsl(270,20%,96%); box-shadow:0 1px 3px rgba(0,0,0,.03); }
+.photo-card img{width:100%;height:100%;object-fit:cover;display:block;}
+
+/* overlay actions - keep order download, move, delete */
+.photo-overlay { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; gap:.5rem; background: rgba(0,0,0,0.55); opacity:0; transition:opacity .18s ease; z-index: 10; }
 .photo-card:hover .photo-overlay { opacity:1; }
+.photo-overlay ::ng-deep .p-button { border-radius:.375rem; padding:.5rem; }
 
-/* Nome */
-.photo-name {
-  position:absolute; bottom:0; left:0; right:0;
-  padding:.5rem;
-  background:rgba(0,0,0,.8);
-  color:white;
-  font-size:.75rem;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
+/* name bar */
+.photo-name { position:absolute; left:0; right:0; bottom:0; padding:.5rem; background: rgba(0,0,0,.8); color:#fff; font-size:.75rem; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
 
-/* === Responsivo ==================================================== */
+/* ===========================
+   Responsive tweaks
+   =========================== */
 @media (max-width:1024px) {
   .main-grid { grid-template-columns:1fr; }
-  .folders-card { max-height:300px; overflow-y:auto; }
+  .folders-card { max-height:none; }
+}
+@media (max-width:768px) {
+  .stats-grid { grid-template-columns:1fr; }
+  .photos-grid { grid-template-columns: repeat(auto-fill,minmax(150px,1fr)); }
 }

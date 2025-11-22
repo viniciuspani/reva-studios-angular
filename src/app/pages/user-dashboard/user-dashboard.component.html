@@ -32,10 +32,7 @@
         <h3>Espaço Usado</h3>
         <p class="card-description">Total de armazenamento utilizado</p>
         <div class="stat-value">{{ formatBytes(currentUser()?.storageUsed || 0) }}</div>
-        <p-progressBar 
-          *ngIf="currentUser()?.plan !== 'studio'"
-          [value]="getStoragePercentage()"
-          [showValue]="false"
+        <p-progressBar *ngIf="currentUser()?.plan !== 'studio'" [value]="getStoragePercentage()" [showValue]="false"
           styleClass="storage-bar">
         </p-progressBar>
         <p class="stat-detail" *ngIf="currentUser()?.plan !== 'studio'">
@@ -65,55 +62,30 @@
         <ng-template pTemplate="header">
           <div class="folders-header">
             <h3>Pastas</h3>
-            <p-button
-              icon="pi pi-plus"
-              [rounded]="true"
-              [text]="true"
-              size="small"
-              (onClick)="createFolder()"
-              pTooltip="Nova Pasta"
-              styleClass="add-folder-btn">
+            <p-button icon="pi pi-plus" [rounded]="true" [text]="true" size="small" (onClick)="createFolder()"
+              pTooltip="Nova Pasta" styleClass="add-folder-btn">
             </p-button>
           </div>
         </ng-template>
 
-        <p-tree
-          [value]="folderNodes"
-          selectionMode="single"
-          (onNodeSelect)="onFolderSelect($event)"
-          styleClass="w-full border-none folders-tree">
+        <p-tree [value]="folderNodes" selectionMode="single" (onNodeSelect)="onFolderSelect($event)"
+          styleClass="w-full border-none folders-tree" class="folders-tree">
           <ng-template let-node pTemplate="default">
             <div class="custom-tree-node">
               <span class="folder-label">{{ node.label }}</span>
               <div class="folder-actions" *ngIf="node.data !== null" (click)="$event.stopPropagation()">
-                <p-button
-                  icon="pi pi-folder-plus"
-                  [rounded]="true"
-                  [text]="true"
-                  size="small"
+                <p-button icon="pi pi-folder-plus" [rounded]="true" [text]="true" size="small"
                   (onClick)="createSubfolder(node.data, $event)"
-                  [pTooltip]="languageService.t('userDashboard.createSubfolder')"
-                  tooltipPosition="top"
+                  [pTooltip]="languageService.t('userDashboard.createSubfolder')" tooltipPosition="top"
                   styleClass="folder-action-btn">
                 </p-button>
-                <p-button
-                  icon="pi pi-pencil"
-                  [rounded]="true"
-                  [text]="true"
-                  size="small"
-                  (onClick)="editFolder(node.data, $event)"
-                  [pTooltip]="languageService.t('userDashboard.editFolder')"
-                  tooltipPosition="top"
-                  styleClass="folder-action-btn">
+                <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" size="small"
+                  (onClick)="editFolder(node.data, $event)" [pTooltip]="languageService.t('userDashboard.editFolder')"
+                  tooltipPosition="top" styleClass="folder-action-btn">
                 </p-button>
-                <p-button
-                  icon="pi pi-trash"
-                  [rounded]="true"
-                  [text]="true"
-                  size="small"
+                <p-button icon="pi pi-trash" [rounded]="true" [text]="true" size="small"
                   (onClick)="deleteFolder(node.data, $event)"
-                  [pTooltip]="languageService.t('userDashboard.deleteFolder')"
-                  tooltipPosition="top"
+                  [pTooltip]="languageService.t('userDashboard.deleteFolder')" tooltipPosition="top"
                   styleClass="folder-action-btn folder-delete-btn">
                 </p-button>
               </div>
@@ -125,107 +97,94 @@
       <!-- Área principal -->
       <div class="gallery-section">
         <!-- Card de Upload -->
-        <p-card>
-          <ng-template pTemplate="header">
-            <div class="upload-header">
-              <div>
-                <h3>Upload de Fotos</h3>
-                <p>{{ selectedFolderId() ? 'Upload para: ' + getCurrentFolderName() : 'Envie suas fotos para o armazenamento em nuvem' }}</p>
+        <div class="upload-card">
+          <p-card>
+            <ng-template pTemplate="header">
+              <div class="upload-header">
+                <div>
+                  <h3>
+                    <i class="pi pi-upload" style="color:#7c3aed; margin-right:.4rem;"></i>
+                    Upload de Fotos
+                  </h3>
+                  <p>{{ selectedFolderId() ? 'Upload para: ' + getCurrentFolderName() : 'Envie suas fotos para o armazenamento em nuvem' }}</p>
+                </div>
               </div>
+            </ng-template>
+
+            <input #fileInput type="file" accept="image/*" multiple (change)="onFileSelect($event)"
+              style="display: none">
+
+            <p-button label="Selecionar Fotos" icon="pi pi-upload" [loading]="isUploading()"
+              (onClick)="openFileSelector()">
+            </p-button>
+
+            <!-- Info do arquivo selecionado -->
+            <div *ngIf="selectedFile()" class="file-path-info">
+              <p-card styleClass="bg-gray-50">
+                <ng-template pTemplate="header">
+                  <div class="file-info-header">
+                    <i class="pi pi-folder-open"></i>
+                    <h4>Informações do Caminho do Arquivo</h4>
+                  </div>
+                </ng-template>
+
+                <div class="path-details">
+                  <div class="path-item">
+                    <label>Arquivo Local:</label>
+                    <p>{{ selectedFile()!.path }}</p>
+                  </div>
+                  <div class="path-item">
+                    <label>Caminho no Armazenamento em Nuvem:</label>
+                    <p>/storage/users/{{ currentUser()?.id }}/photos/{{ selectedFile()!.name }}</p>
+                  </div>
+                </div>
+              </p-card>
             </div>
-          </ng-template>
-
-          <input 
-            #fileInput
-            type="file"
-            accept="image/*"
-            multiple
-            (change)="onFileSelect($event)"
-            style="display: none">
-
-          <p-button 
-            label="Selecionar Fotos"
-            icon="pi pi-upload"
-            [loading]="isUploading()"
-            (onClick)="openFileSelector()">
-          </p-button>
-
-          <!-- Info do arquivo selecionado -->
-          <div *ngIf="selectedFile()" class="file-path-info">
-            <p-card styleClass="bg-gray-50">
-              <ng-template pTemplate="header">
-                <div class="file-info-header">
-                  <i class="pi pi-folder-open"></i>
-                  <h4>Informações do Caminho do Arquivo</h4>
-                </div>
-              </ng-template>
-              
-              <div class="path-details">
-                <div class="path-item">
-                  <label>Arquivo Local:</label>
-                  <p>{{ selectedFile()!.path }}</p>
-                </div>
-                <div class="path-item">
-                  <label>Caminho no Armazenamento em Nuvem:</label>
-                  <p>/storage/users/{{ currentUser()?.id }}/photos/{{ selectedFile()!.name }}</p>
-                </div>
-              </div>
-            </p-card>
-          </div>
-        </p-card>
+          </p-card>
+        </div>
 
         <!-- Galeria de Fotos -->
-        <p-card>
-          <ng-template pTemplate="header">
-            <div class="gallery-header">
-              <div>
-                <i class="pi pi-folder-open"></i>
-                <h3>{{ getCurrentFolderName() }}</h3>
+        <div class="gallery-card">
+          <p-card>
+            <ng-template pTemplate="header">
+              <div class="gallery-header">
+                <div>
+                  <i class="pi pi-folder-open" style="color:#7c3aed; margin-right:.35rem;"></i>
+                  <h3>{{ getCurrentFolderName() }}</h3>
+                </div>
+                <p>{{ photos().length }} {{ photos().length === 1 ? 'foto' : 'fotos' }} nesta pasta</p>
               </div>
-              <p>{{ photos().length }} {{ photos().length === 1 ? 'foto' : 'fotos' }} nesta pasta</p>
-            </div>
-          </ng-template>
+            </ng-template>
 
-          <!-- Grid de fotos -->
-          <div *ngIf="photos().length > 0; else noPhotos" class="photos-grid">
-            <div *ngFor="let photo of photos()" class="photo-card">
-              <img [src]="photo.dataUrl" [alt]="photo.name">
-              <div class="photo-overlay">
-                <p-button 
-                  icon="pi pi-download"
-                  [rounded]="true"
-                  size="small"
-                  (onClick)="downloadPhoto(photo)">
-                </p-button>
-                <p-button 
-                  icon="pi pi-ellipsis-v"
-                  [rounded]="true"
-                  size="small"
-                  (onClick)="menu.toggle($event)"
-                  #menuButton>
-                </p-button>
-                <p-menu 
-                  #menu
-                  [model]="getPhotoMenuItems(photo)"
-                  [popup]="true"
-                  appendTo="body">
-                </p-menu>
+            <!-- Grid de fotos -->
+            <div *ngIf="photos().length > 0; else noPhotos" class="photos-grid">
+              <div *ngFor="let photo of photos()" class="photo-card">
+                <img [src]="photo.dataUrl" [alt]="photo.name">
+                <div class="photo-overlay">
+                  <p-button icon="pi pi-download" [rounded]="true" size="small" (onClick)="downloadPhoto(photo)">
+                  </p-button>
+                  <p-button icon="pi pi-ellipsis-v" [rounded]="true" size="small" (onClick)="menu.toggle($event)"
+                    #menuButton>
+                  </p-button>
+                  <p-menu #menu [model]="getPhotoMenuItems(photo)" [popup]="true" appendTo="body">
+                  </p-menu>
+                </div>
+                <div class="photo-name">{{ photo.name }}</div>
               </div>
-              <div class="photo-name">{{ photo.name }}</div>
             </div>
-          </div>
 
-          <ng-template #noPhotos>
-            <div class="no-photos">
-              <i class="pi pi-images"></i>
-              <p>
-                {{ selectedFolderId() 
-                  ? 'Nenhuma foto nesta pasta' 
+            <ng-template #noPhotos>
+              <div class="no-photos">
+                <i class="pi pi-images"></i>
+                <p>
+                  {{ selectedFolderId()
+                  ? 'Nenhuma foto nesta pasta'
                   : 'Nenhuma foto armazenada ainda. Faça upload de suas primeiras fotos!' }}
-              </p>
-            </div>
-          </ng-template>
-        </p-card>
+                </p>
+              </div>
+            </ng-template>
+          </p-card>
+        </div>
       </div>
     </div>
   </div>
