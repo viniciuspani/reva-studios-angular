@@ -229,8 +229,31 @@
   fill:#fff !important;
 }
 
-/* children indentation without increasing total width */
-.folders-card .p-tree.folders-tree .p-tree-node-children { padding-left:1rem; max-width:100%; overflow-x:clip; }
+/* children indentation - allow overflow for action buttons */
+.folders-card .p-tree.folders-tree .p-tree-node-children {
+  padding-left: 1rem;
+  overflow: visible !important;
+}
+
+/* Ensure tree container allows overflow for buttons */
+.folders-card .p-tree.folders-tree .p-tree-container,
+.folders-card .p-tree.folders-tree .p-tree-root {
+  overflow: visible !important;
+}
+
+/* Fix node content width to prevent button clipping */
+.folders-card .p-tree.folders-tree .p-tree-node-content {
+  min-width: fit-content !important;
+}
+
+/* ===========================
+   GALLERY SECTION LAYOUT
+   =========================== */
+.gallery-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
 
 /* ===========================
    UPLOAD CARD (center)
@@ -238,14 +261,15 @@
    =========================== */
 
 /* style the p-card inside upload-card */
-.upload-card ::ng-deep .p-card,
+.upload-card ::ng-deep .p-card {
+  border-radius: .75rem;
+  background: #fff;
+  box-shadow: 0 1px 6px rgba(0,0,0,.06);
+  border: 1px solid rgba(124,58,237,0.03);
+}
+
 .upload-card ::ng-deep .p-card-body {
-  border-radius:.75rem;
-  background:#fff;
-  box-shadow:0 1px 6px rgba(0,0,0,.06);
-  border:1px solid rgba(124,58,237,0.03);
-  padding:1.25rem 1.5rem;
-  margin-bottom: 1rem;
+  padding: 1.25rem 1.5rem;
 }
 
 /* header icon style */
@@ -268,14 +292,15 @@
    - scoped with .gallery-card wrapper in HTML
    =========================== */
 
-.gallery-card ::ng-deep .p-card,
+.gallery-card ::ng-deep .p-card {
+  border-radius: .75rem;
+  background: #fff;
+  box-shadow: 0 1px 6px rgba(0,0,0,.06);
+  border: 1px solid rgba(124,58,237,0.03);
+}
+
 .gallery-card ::ng-deep .p-card-body {
-  border-radius:.75rem;
-  background:#fff;
-  box-shadow:0 1px 6px rgba(0,0,0,.06);
-  border:1px solid rgba(124,58,237,0.03);
-  padding:1.25rem 1.5rem;
-  margin-top: 1rem;
+  padding: 1.25rem 1.5rem;
 }
 
 /* gallery header icon style */
