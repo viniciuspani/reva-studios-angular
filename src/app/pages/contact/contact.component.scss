@@ -44,9 +44,27 @@
 
 ::ng-deep {
   .p-button.w-full { width: 100%; background-color: #9f13e6 !important; border-color: #A429E2 !important; color: white !important; margin-top: 1rem !important; &:enabled:hover { background-color: #B540F0 !important; border-color: #B540F0 !important; } &:focus { box-shadow: 0 0 0 2px rgba(164, 41, 226, 0.2) !important; } }
-  .p-inputtext:focus { border-color: #A429E2 !important; box-shadow: 0 0 0 2px rgba(164, 41, 226, 0.2) !important; }
-  .p-inputtext:enabled:hover { border-color: #d1d5db !important; }
-  textarea.p-inputtextarea { width: 100% !important; resize: vertical !important; border: 2px solid #e5e7eb !important; &:enabled:hover { border-color: #d1d5db !important; } &:focus { border-color: #A429E2 !important; box-shadow: 0 0 0 2px rgba(164, 41, 226, 0.2) !important; outline: none !important; } }
+
+  .p-inputtext {
+    --p-form-field-hover-border-color: #d946ef;
+    --p-form-field-focus-border-color: #6b21a8;
+    &:enabled:hover { border-color: #d946ef !important; }
+    &:focus { border-color: #6b21a8 !important; box-shadow: 0 0 0 2px rgba(107, 33, 168, 0.2) !important; }
+  }
+
+  textarea.p-inputtextarea,
+  .p-textarea {
+    --p-textarea-hover-border-color: #d946ef;
+    --p-textarea-focus-border-color: #6b21a8;
+    --p-form-field-hover-border-color: #d946ef;
+    --p-form-field-focus-border-color: #6b21a8;
+    width: 100% !important;
+    resize: vertical !important;
+    border: 2px solid #e5e7eb !important;
+    &:enabled:hover { border-color: #d946ef !important; }
+    &:focus { border-color: #6b21a8 !important; box-shadow: 0 0 0 2px rgba(107, 33, 168, 0.2) !important; outline: none !important; }
+  }
+
   .p-card { height: 100%; display: flex; flex-direction: column; .p-card-body { flex: 1; display: flex; flex-direction: column; } .p-card-content { flex: 1; } }
 }
 
