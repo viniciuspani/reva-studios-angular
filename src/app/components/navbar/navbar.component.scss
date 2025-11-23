@@ -55,8 +55,9 @@
       }
 
       &.active {
+        color: #B9399C;
         font-weight: 600;
-        &::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 100%; height: 2px; background: white; border-radius: 2px; }
+        &::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 100%; height: 2px; background: #B9399C; border-radius: 2px; }
       }
     }
 
