@@ -15,7 +15,35 @@
   input, ::ng-deep .p-password, ::ng-deep .p-dropdown { width: 100%; }
 }
 
-.recovery-link { text-align: center; margin-top: 1rem; color: #AD2BEE !important; }
+.recovery-link {
+  text-align: center;
+  margin-top: 1rem;
+
+  ::ng-deep .p-button {
+    color: #d946ef !important;
+    background: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    font-weight: 400 !important;
+
+    &:hover {
+      color: #d946ef !important;
+      background: none !important;
+      border: none !important;
+      box-shadow: none !important;
+      text-decoration: underline !important;
+    }
+
+    &:focus {
+      box-shadow: none !important;
+    }
+
+    .p-button-label {
+      text-decoration: inherit;
+    }
+  }
+}
 .signup-section { text-align: center; margin-top: 1rem; }
 .signup-text { margin-bottom: 1rem; color: #666666; strong { color: #AD2BEE !important; } }
 
