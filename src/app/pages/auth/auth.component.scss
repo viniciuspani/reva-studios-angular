@@ -63,8 +63,25 @@
 .form-actions { display: flex; gap: 0.5rem; margin-top: 1.5rem; }
 
 ::ng-deep {
-  .p-button.w-full { width: 100%; cursor: pointer; opacity: 1 !important; }
-  .p-button { opacity: 1 !important; }
+  .p-button.w-full {
+    width: 100%;
+    cursor: pointer;
+    opacity: 1 !important;
+
+    &:hover {
+      background-color: #7c3aed !important;
+      border-color: #7c3aed !important;
+      color: white !important;
+      cursor: pointer;
+    }
+
+    &.p-button-outlined:hover {
+      background-color: #d946ef !important;
+      border-color: #d946ef !important;
+      color: white !important;
+    }
+  }
+  .p-button { opacity: 1 !important; cursor: pointer; }
 
   .p-inputtext {
     --p-form-field-hover-border-color: #d946ef;
@@ -92,5 +109,4 @@
   }
 }
 
-.p-button:hover { background-color: #d946ef !important; border-color: #d946ef !important; color: white !important; }
 .p-button.p-button-link { background: none !important; border: none !important; font-weight: 400 !important; &:hover { text-decoration: underline !important; color: #AD2BEE !important; background: none !important; border: none !important; } }
