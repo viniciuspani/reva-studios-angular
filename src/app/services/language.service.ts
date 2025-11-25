@@ -201,9 +201,9 @@ export class LanguageService {
           description: 'Compromisso com excelência em cada detalhe da plataforma.'
         },
         cta: {
-          title: 'Feito por fotógrafos, para fotógrafos',
+          title: 'Conectando fotógrafos ao futuro',
           subtitle: 'Pronto para começar?',
-          description: 'Participe da comunidade que está moldando o futuro da fotografia digital.'
+          description: 'Venha fazer parte da comunidade que transforma a fotografia digital todos os dias.'
         }
       },
       contact: {
@@ -471,9 +471,9 @@ export class LanguageService {
           description: 'Commitment to excellence in every detail of the platform.'
         },
         cta: {
-          title: 'Made by photographers, for photographers',
+          title: 'Connecting photographers to the future.',
           subtitle: 'Ready to get started?',
-          description: 'Join the community that is shaping the future of digital photography.'
+          description: 'Come and be part of the community that transforms digital photography every day.'
         }
       },
       contact: {
