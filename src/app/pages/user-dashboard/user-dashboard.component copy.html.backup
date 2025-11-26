@@ -134,8 +134,8 @@
                     <p>{{ selectedFile()!.path }}</p>
                   </div>
                   <div class="path-item">
-                    <label>Caminho no S3:</label>
-                    <p>s3://reva-studios-uploads/{{ selectedFile()!.name }}</p>
+                    <label>Caminho no Armazenamento em Nuvem:</label>
+                    <p>/storage/users/{{ currentUser()?.id }}/photos/{{ selectedFile()!.name }}</p>
                   </div>
                 </div>
               </p-card>
@@ -156,36 +156,11 @@
               </div>
             </ng-template>
 
-            <!-- Loading state -->
-            <div *ngIf="isLoadingPhotos()" class="loading-photos">
-              <i class="pi pi-spin pi-spinner" style="font-size: 2rem; color: #7c3aed;"></i>
-              <p>Carregando fotos...</p>
-            </div>
-
             <!-- Grid de fotos -->
-            <div *ngIf="!isLoadingPhotos() && photos().length > 0; else noPhotos" class="photos-grid">
+            <div *ngIf="photos().length > 0; else noPhotos" class="photos-grid">
               <div *ngFor="let photo of photos()" class="photo-card">
-                <!-- Loading individual da imagem -->
-                <div *ngIf="photo.isLoadingUrl" class="photo-loading">
-                  <i class="pi pi-spin pi-spinner"></i>
-                  <span>Carregando...</span>
-                </div>
-                
-                <!-- Imagem ou placeholder -->
-                <img 
-                  *ngIf="!photo.isLoadingUrl && photo.displayUrl" 
-                  [src]="photo.displayUrl" 
-                  [alt]="photo.name"
-                  (error)="onImageError($event, photo)">
-                
-                <!-- Erro ao carregar imagem -->
-                <div *ngIf="!photo.isLoadingUrl && !photo.displayUrl" class="photo-error">
-                  <i class="pi pi-exclamation-triangle"></i>
-                  <span>Erro ao carregar</span>
-                </div>
-
-                <!-- Overlay com ações (só aparece se a imagem estiver carregada) -->
-                <div *ngIf="!photo.isLoadingUrl && photo.displayUrl" class="photo-overlay">
+                <img [src]="photo.dataUrl" [alt]="photo.name">
+                <div class="photo-overlay">
                   <!-- Download -->
                   <p-button icon="pi pi-download" [rounded]="true" size="small"
                     (onClick)="downloadPhoto(photo)" styleClass="btn-download"
@@ -204,7 +179,6 @@
                     pTooltip="Excluir" tooltipPosition="top">
                   </p-button>
                 </div>
-                
                 <div class="photo-name">{{ photo.name }}</div>
               </div>
             </div>

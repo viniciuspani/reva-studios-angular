@@ -12,8 +12,6 @@ import { MenuItem } from 'primeng/api';
 import { TreeModule } from 'primeng/tree';
 import { TreeNode } from 'primeng/api';
 import { TooltipModule } from 'primeng/tooltip';
-import { forkJoin, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
 import { NavbarComponent } from '../../components/navbar/navbar.component';
 import { StorageService } from '../../services/storage.service';
 import { LanguageService } from '../../services/language.service';
@@ -21,14 +19,6 @@ import { UploadService, UploadResponse } from '../../services/upload.service';
 import { User } from '../../models/user.model';
 import { Photo } from '../../models/photo.model';
 import { Folder } from '../../models/folder.model';
-
-/**
- * Interface estendida para fotos com URL de visualização
- */
-interface PhotoWithUrl extends Photo {
-  displayUrl?: string;
-  isLoadingUrl?: boolean;
-}
 
 /**
  * Componente do dashboard do usuário
@@ -65,11 +55,10 @@ export class UserDashboardComponent implements OnInit {
 
   // Signals para controle de estado
   currentUser = signal<User | null>(null);
-  photos = signal<PhotoWithUrl[]>([]);
+  photos = signal<Photo[]>([]);
   folders = signal<Folder[]>([]);
   selectedFolderId = signal<string | null>(null);
   isUploading = signal(false);
-  isLoadingPhotos = signal(false);
   selectedFile = signal<{ name: string; path: string } | null>(null);
 
   // Tree nodes para exibição de pastas
@@ -100,63 +89,14 @@ export class UserDashboardComponent implements OnInit {
   }
 
   /**
-   * Carrega fotos da pasta selecionada e suas URLs de visualização
+   * Carrega fotos da pasta selecionada
    */
   loadPhotos(): void {
     const user = this.currentUser();
     if (!user) return;
 
-    this.isLoadingPhotos.set(true);
-
     const userPhotos = this.storageService.getUserPhotos(user.id, this.selectedFolderId());
-    
-    // Inicializa fotos sem URLs
-    const photosWithUrl: PhotoWithUrl[] = userPhotos.map(photo => ({
-      ...photo,
-      displayUrl: undefined,
-      isLoadingUrl: true
-    }));
-    
-    this.photos.set(photosWithUrl);
-
-    // Carrega URLs pré-assinadas para cada foto
-    if (userPhotos.length > 0) {
-      this.loadPhotoUrls(userPhotos);
-    } else {
-      this.isLoadingPhotos.set(false);
-    }
-  }
-
-  /**
-   * Carrega URLs pré-assinadas para visualização das fotos
-   */
-  private loadPhotoUrls(photos: Photo[]): void {
-    const urlRequests = photos.map(photo => 
-      this.uploadService.getDownloadUrl(photo.s3Key || '').pipe(
-        catchError(error => {
-          console.error(`Erro ao carregar URL para ${photo.name}:`, error);
-          return of(null); // Retorna null em caso de erro
-        })
-      )
-    );
-
-    forkJoin(urlRequests).subscribe({
-      next: (urls) => {
-        const updatedPhotos = this.photos().map((photo, index) => ({
-          ...photo,
-          displayUrl: urls[index] || undefined,
-          isLoadingUrl: false
-        }));
-        
-        this.photos.set(updatedPhotos);
-        this.isLoadingPhotos.set(false);
-      },
-      error: (error) => {
-        console.error('Erro ao carregar URLs das fotos:', error);
-        this.isLoadingPhotos.set(false);
-        this.showError('Erro', 'Falha ao carregar algumas imagens');
-      }
-    });
+    this.photos.set(userPhotos);
   }
 
   /**
@@ -170,7 +110,7 @@ export class UserDashboardComponent implements OnInit {
           label: folder.name,
           data: folder.id,
           icon: 'pi pi-folder',
-          expanded: true,
+          expanded: true,  // Expande todos os nós por padrão
           children: buildNode(folder.id)
         }));
     };
@@ -256,6 +196,7 @@ export class UserDashboardComponent implements OnInit {
     this.storageService.deleteFolder(folderId);
     this.loadData();
 
+    // Se a pasta excluída estava selecionada, volta para "Todas as fotos"
     if (this.selectedFolderId() === folderId) {
       this.selectedFolderId.set(null);
     }
@@ -265,7 +206,7 @@ export class UserDashboardComponent implements OnInit {
 
   /**
    * Manipula seleção de arquivos
-   * Agora usa uploadAndGetUrl para obter a URL de visualização imediatamente
+   * Agora envia para S3 via UploadService ao invés de salvar no localStorage
    */
   async onFileSelect(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
@@ -297,12 +238,12 @@ export class UserDashboardComponent implements OnInit {
       }
 
       try {
-        // Upload para S3 e obtém URL de visualização
-        this.uploadService.uploadAndGetUrl(file).subscribe({
+        // Upload para S3 usando UploadService
+        this.uploadService.uploadFile(file).subscribe({
           next: (result: UploadResponse) => {
             console.log('Upload S3 bem-sucedido:', result);
 
-            // Salvar metadados da foto no localStorage
+            // Salvar metadados da foto no localStorage (não o arquivo)
             const photo: Photo = {
               id: crypto.randomUUID(),
               userId: user.id,
@@ -311,8 +252,8 @@ export class UserDashboardComponent implements OnInit {
               size: file.size,
               type: file.type,
               uploadedAt: new Date().toISOString(),
-              dataUrl: result.fileUrl,      // URL pré-assinada inicial
-              s3Key: result.fileKey,         // Chave S3 para gerar novas URLs
+              dataUrl: result.fileUrl,      // URL do S3
+              s3Key: result.fileKey,         // Chave S3
               bucketName: result.bucketName  // Nome do bucket
             };
 
@@ -326,7 +267,7 @@ export class UserDashboardComponent implements OnInit {
               storageUsed: user.storageUsed + file.size
             });
 
-            this.showSuccess('Upload realizado!', `${file.name} foi enviada com sucesso`);
+            this.showSuccess('Upload realizado!', `${file.name} foi enviada com sucesso para o S3`);
 
             // Atualiza user no signal
             const updatedUser = this.storageService.getCurrentUser();
@@ -338,7 +279,8 @@ export class UserDashboardComponent implements OnInit {
           },
           error: (error) => {
             console.error('Erro no upload S3:', error);
-            this.showError('Erro no upload', `Falha ao enviar ${file.name}`);
+            this.showError('Erro no upload', `Falha ao enviar ${file.name} para o S3`);
+            this.isUploading.set(false);
           }
         });
       } catch (error) {
@@ -348,7 +290,7 @@ export class UserDashboardComponent implements OnInit {
     }
 
     this.isUploading.set(false);
-    input.value = '';
+    input.value = ''; // Reset input
   }
 
   /**
@@ -360,34 +302,20 @@ export class UserDashboardComponent implements OnInit {
 
   /**
    * Faz download de uma foto
-   * Gera nova URL pré-assinada para download
    */
-  downloadPhoto(photo: PhotoWithUrl): void {
-    if (!photo.s3Key) {
-      this.showError('Erro', 'Chave S3 não encontrada');
-      return;
-    }
+  downloadPhoto(photo: Photo): void {
+    const link = document.createElement('a');
+    link.href = photo.dataUrl;
+    link.download = photo.name;
+    link.click();
 
-    this.uploadService.getDownloadUrl(photo.s3Key).subscribe({
-      next: (url) => {
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = photo.name;
-        link.click();
-        this.showSuccess('Download iniciado', `Baixando ${photo.name}`);
-      },
-      error: (error) => {
-        console.error('Erro ao gerar URL de download:', error);
-        this.showError('Erro', 'Falha ao gerar link de download');
-      }
-    });
+    this.showSuccess('Download iniciado', `Baixando ${photo.name}`);
   }
 
   /**
    * Deleta uma foto
-   * TODO: Implementar exclusão no S3 também
    */
-  deletePhoto(photo: PhotoWithUrl): void {
+  deletePhoto(photo: Photo): void {
     if (confirm('Tem certeza que deseja excluir esta foto?')) {
       this.storageService.deletePhoto(photo.id);
       this.showSuccess('Foto excluída', 'A foto foi removida do seu armazenamento');
@@ -399,18 +327,16 @@ export class UserDashboardComponent implements OnInit {
       }
 
       this.loadPhotos();
-      
-      // TODO: Adicionar chamada para deletar do S3
-      // this.uploadService.deleteFile(photo.s3Key).subscribe(...)
     }
   }
 
   /**
    * Obtém itens do menu de mover para uma foto (lista plana)
    */
-  getMoveMenuItems(photo: PhotoWithUrl): MenuItem[] {
+  getMoveMenuItems(photo: Photo): MenuItem[] {
     const allFolders = this.folders();
 
+    // Lista plana de todas as pastas com indentação visual
     const flatFolderList: MenuItem[] = [];
 
     const buildFlatList = (parentId: string | null, level: number = 0): void => {
@@ -523,17 +449,4 @@ export class UserDashboardComponent implements OnInit {
       detail: message
     });
   }
-
-  /**
- * Trata erro ao carregar imagem
- */
-onImageError(event: Event, photo: PhotoWithUrl): void {
-  console.error('Erro ao carregar imagem:', photo.name);
-  
-  // Marca a foto como tendo erro
-  const updatedPhotos = this.photos().map(p => 
-    p.id === photo.id ? { ...p, displayUrl: undefined, isLoadingUrl: false } : p
-  );
-  this.photos.set(updatedPhotos);
-}
 }
