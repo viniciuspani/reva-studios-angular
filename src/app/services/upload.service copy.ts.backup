@@ -1,7 +1,7 @@
 // import { Injectable } from '@angular/core';
 // import { HttpClient } from '@angular/common/http';
 // import { Observable, from, throwError, forkJoin, of } from 'rxjs';
-// import { switchMap, catchError, map } from 'rxjs/operators';
+// import { switchMap, catchError } from 'rxjs/operators';
 
 // export interface UploadResponse {
 //   success: boolean;
@@ -16,19 +16,14 @@
 //   bucketName: string;
 // }
 
-// export interface DownloadUrlResponse {
-//   downloadUrl: string;
-//   fileKey: string;
-//   bucketName: string;
-// }
-
 // @Injectable({
 //   providedIn: 'root'
 // })
 // export class UploadService {
+//   // ⚠️ SUBSTITUA pela URL da sua API Gateway
 //   private apiUrl = 'https://hleasylvvb.execute-api.us-east-2.amazonaws.com/prod';
 
-  
+   
 //   constructor(private http: HttpClient) { }
 
 //   /**
@@ -36,7 +31,8 @@
 //    */
 //   uploadFile(file: File): Observable<UploadResponse> {
 //     console.log('Iniciando upload:', file.name);
-    
+
+//     // 1. Solicitar URL pré-assinada do Lambda
 //     return this.http.post<PresignedUrlResponse>(
 //       `${this.apiUrl}/generate-upload-url`,
 //       {
@@ -46,7 +42,8 @@
 //     ).pipe(
 //       switchMap(response => {
 //         console.log('URL pré-assinada recebida:', response);
-        
+
+//         // 2. Fazer upload do arquivo diretamente para o S3
 //         return from(
 //           fetch(response.uploadUrl, {
 //             method: 'PUT',
@@ -58,11 +55,13 @@
 //             if (!uploadResponse.ok) {
 //               throw new Error(`Upload failed: ${uploadResponse.statusText}`);
 //             }
+
 //             console.log('Upload concluído com sucesso');
+
 //             return {
 //               success: true,
 //               fileKey: response.fileKey,
-//               fileUrl: '', // Vamos pegar via URL pré-assinada
+//               fileUrl: this.getFileUrl(response.bucketName, response.fileKey),
 //               bucketName: response.bucketName
 //             };
 //           })
@@ -76,47 +75,11 @@
 //   }
 
 //   /**
-//    * Obtém URL pré-assinada para visualizar/baixar um arquivo
+//    * Constrói a URL pública do arquivo no S3
 //    */
-//   // getDownloadUrl(fileKey: string): Observable<string> {
-//   //   return this.http.get<DownloadUrlResponse>(
-//   //     `${this.apiUrl}/generate-download-url`,
-//   //     {
-//   //       params: { fileKey }
-//   //     }
-//   //   ).pipe(
-//   //     map(response => response.downloadUrl),
-//   //     catchError(error => {
-//   //       console.error('Erro ao obter URL de download:', error);
-//   //       return throwError(() => error);
-//   //     })
-//   //   );
-//   // }
-
-//   /**
-//  * Obtém URL pré-assinada para visualizar/baixar um arquivo
-//  */
-// getDownloadUrl(fileKey: string): Observable<string> {
-//   // Agora retorna a URL da API que serve a imagem
-//   const imageUrl = `${this.apiUrl}/get-photo?fileKey=${encodeURIComponent(fileKey)}`;
- 
-//   return of(imageUrl);
-// }
-
-//   /**
-//    * Faz upload e retorna a URL de visualização
-//    */
-//   uploadAndGetUrl(file: File): Observable<UploadResponse> {
-//     return this.uploadFile(file).pipe(
-//       switchMap(uploadResponse => 
-//         this.getDownloadUrl(uploadResponse.fileKey).pipe(
-//           map(downloadUrl => ({
-//             ...uploadResponse,
-//             fileUrl: downloadUrl
-//           }))
-//         )
-//       )
-//     );
+//   private getFileUrl(bucketName: string, fileKey: string): string {
+//     const region = 'us-east-2'; // Substitua pela sua região
+//     return `https://${bucketName}.s3.${region}.amazonaws.com/${fileKey}`;
 //   }
 
 //   /**
@@ -126,11 +89,12 @@
 //     if (files.length === 0) {
 //       return of([]);
 //     }
-    
-//     const uploads = files.map(file => this.uploadAndGetUrl(file));
+//     const uploads = files.map(file => this.uploadFile(file));
 //     return forkJoin(uploads);
 //   }
 // }
+
+
 
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
@@ -150,11 +114,18 @@ export interface PresignedUrlResponse {
   bucketName: string;
 }
 
+export interface DownloadUrlResponse {
+  downloadUrl: string;
+  fileKey: string;
+  bucketName: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class UploadService {
   private apiUrl = 'https://hleasylvvb.execute-api.us-east-2.amazonaws.com/prod';
+
   
   constructor(private http: HttpClient) { }
 
@@ -186,12 +157,10 @@ export class UploadService {
               throw new Error(`Upload failed: ${uploadResponse.statusText}`);
             }
             console.log('Upload concluído com sucesso');
-            
-            // Retorna com a URL do proxy
             return {
               success: true,
               fileKey: response.fileKey,
-              fileUrl: this.getProxyImageUrl(response.fileKey),
+              fileUrl: '', // Vamos pegar via URL pré-assinada
               bucketName: response.bucketName
             };
           })
@@ -205,25 +174,47 @@ export class UploadService {
   }
 
   /**
-   * Obtém URL do proxy de imagem
+   * Obtém URL pré-assinada para visualizar/baixar um arquivo
    */
-  getProxyImageUrl(fileKey: string): string {
-    return `${this.apiUrl}/proxy-image?fileKey=${encodeURIComponent(fileKey)}`;
-  }
+  // getDownloadUrl(fileKey: string): Observable<string> {
+  //   return this.http.get<DownloadUrlResponse>(
+  //     `${this.apiUrl}/generate-download-url`,
+  //     {
+  //       params: { fileKey }
+  //     }
+  //   ).pipe(
+  //     map(response => response.downloadUrl),
+  //     catchError(error => {
+  //       console.error('Erro ao obter URL de download:', error);
+  //       return throwError(() => error);
+  //     })
+  //   );
+  // }
 
   /**
-   * Obtém URL para visualização/download
-   */
-  getDownloadUrl(fileKey: string): Observable<string> {
-    // Simplesmente retorna a URL do proxy
-    return of(this.getProxyImageUrl(fileKey));
-  }
+ * Obtém URL pré-assinada para visualizar/baixar um arquivo
+ */
+getDownloadUrl(fileKey: string): Observable<string> {
+  // Agora retorna a URL da API que serve a imagem
+  const imageUrl = `${this.apiUrl}/get-photo?fileKey=${encodeURIComponent(fileKey)}`;
+ 
+  return of(imageUrl);
+}
 
   /**
    * Faz upload e retorna a URL de visualização
    */
   uploadAndGetUrl(file: File): Observable<UploadResponse> {
-    return this.uploadFile(file);
+    return this.uploadFile(file).pipe(
+      switchMap(uploadResponse => 
+        this.getDownloadUrl(uploadResponse.fileKey).pipe(
+          map(downloadUrl => ({
+            ...uploadResponse,
+            fileUrl: downloadUrl
+          }))
+        )
+      )
+    );
   }
 
   /**
