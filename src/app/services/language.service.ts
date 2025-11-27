@@ -186,19 +186,19 @@ export class LanguageService {
         description: 'O Reva Studios nasceu da paixão por fotografia e tecnologia. Nossa missão é simplificar a vida dos fotógrafos, oferecendo uma plataforma completa para armazenamento, organização e compartilhamento de fotos.',
         vision: {
           title: 'Nossa Visão',
-          description: 'Ser a plataforma preferida dos fotógrafos para gerenciamento de suas obras e clientes.'
+          description: 'Ser a principal plataforma inteligente para fotógrafos, unindo gestão, organização e criatividade em um só lugar.'
         },
         mission: {
           title: 'Nossa Missão',
-          description: 'Simplificar o dia a dia dos fotógrafos com tecnologia intuitiva e confiável.'
+          description: 'Empoderar fotógrafos com tecnologia acessível, intuitiva e confiável, tornando seus processos mais leves e eficientes.'
         },
         innovation: {
           title: 'Inovação',
-          description: 'Sempre buscando as melhores soluções tecnológicas para nossos usuários.'
+          description: 'Transformar necessidades reais em soluções tecnológicas modernas, com foco em velocidade, simplicidade e impacto na rotina dos usuários.'
         },
         quality: {
           title: 'Qualidade',
-          description: 'Compromisso com excelência em cada detalhe da plataforma.'
+          description: 'Garantir uma experiência de alto nível, com performance, segurança e acabamento impecável em cada recurso.'
         },
         cta: {
           title: 'Conectando fotógrafos ao futuro',
@@ -456,19 +456,19 @@ export class LanguageService {
         description: 'Reva Studios was born from a passion for photography and technology. Our mission is to simplify photographers\' lives by offering a complete platform for photo storage, organization and sharing.',
         vision: {
           title: 'Our Vision',
-          description: 'To be the preferred platform for photographers to manage their work and clients.'
+          description: 'To be the leading intelligent platform for photographers, uniting management, organization, and creativity in one place.'
         },
         mission: {
           title: 'Our Mission',
-          description: 'Simplify photographers\' daily lives with intuitive and reliable technology.'
+          description: 'To empower photographers with accessible, intuitive, and reliable technology, making their processes lighter and more efficient.'
         },
         innovation: {
           title: 'Innovation',
-          description: 'Always seeking the best technological solutions for our users.'
+          description: 'To transform real needs into modern technological solutions, focusing on speed, simplicity, and impact on users routines.'
         },
         quality: {
           title: 'Quality',
-          description: 'Commitment to excellence in every detail of the platform.'
+          description: 'To guarantee a high-level experience, with performance, security, and impeccable finish in every feature.'
         },
         cta: {
           title: 'Connecting photographers to the future.',
