@@ -388,22 +388,51 @@ export class UserDashboardComponent implements OnInit {
    * TODO: Implementar exclusão no S3 também
    */
   deletePhoto(photo: PhotoWithUrl): void {
-    if (confirm('Tem certeza que deseja excluir esta foto?')) {
-      this.storageService.deletePhoto(photo.id);
-      this.showSuccess('Foto excluída', 'A foto foi removida do seu armazenamento');
-
-      // Atualiza user no signal
-      const updatedUser = this.storageService.getCurrentUser();
-      if (updatedUser) {
-        this.currentUser.set(updatedUser);
-      }
-
-      this.loadPhotos();
-      
-      // TODO: Adicionar chamada para deletar do S3
-      // this.uploadService.deleteFile(photo.s3Key).subscribe(...)
-    }
+  if (!confirm('Tem certeza que deseja excluir esta foto?')) {
+    return;
   }
+
+  // Se a foto tem s3Key, deleta do S3 também
+  if (photo.s3Key) {
+    this.uploadService.deleteFile(photo.s3Key).subscribe({
+      next: (response) => {
+        console.log('Arquivo deletado do S3:', response);
+        
+        // Remove do localStorage
+        this.storageService.deletePhoto(photo.id);
+        this.showSuccess('Foto excluída', 'A foto foi removida do S3 e do seu armazenamento');
+
+        // Atualiza user no signal
+        const updatedUser = this.storageService.getCurrentUser();
+        if (updatedUser) {
+          this.currentUser.set(updatedUser);
+        }
+
+        this.loadPhotos();
+      },
+      error: (error) => {
+        console.error('Erro ao deletar do S3:', error);
+        
+        // Mesmo com erro no S3, remove do localStorage
+        this.storageService.deletePhoto(photo.id);
+        this.showError('Aviso', 'A foto foi removida localmente, mas pode ainda estar no S3');
+        
+        this.loadPhotos();
+      }
+    });
+  } else {
+    // Foto antiga sem s3Key, só remove do localStorage
+    this.storageService.deletePhoto(photo.id);
+    this.showSuccess('Foto excluída', 'A foto foi removida do seu armazenamento');
+
+    const updatedUser = this.storageService.getCurrentUser();
+    if (updatedUser) {
+      this.currentUser.set(updatedUser);
+    }
+
+    this.loadPhotos();
+  }
+}
 
   /**
    * Obtém itens do menu de mover para uma foto (lista plana)
