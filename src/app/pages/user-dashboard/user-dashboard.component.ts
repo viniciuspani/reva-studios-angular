@@ -1,6 +1,7 @@
-import { Component, inject, OnInit, signal, ViewChild, ElementRef, ViewEncapsulation } from '@angular/core';
+import { Component, inject, OnInit, signal, ViewChild, ElementRef, ViewEncapsulation, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { ProgressBarModule } from 'primeng/progressbar';
@@ -9,9 +10,9 @@ import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { MenuModule } from 'primeng/menu';
 import { MenuItem } from 'primeng/api';
-import { TreeModule } from 'primeng/tree';
-import { TreeNode } from 'primeng/api';
 import { TooltipModule } from 'primeng/tooltip';
+import { DialogModule } from 'primeng/dialog';
+import { InputTextModule } from 'primeng/inputtext';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { NavbarComponent } from '../../components/navbar/navbar.component';
@@ -21,6 +22,7 @@ import { UploadService, UploadResponse } from '../../services/upload.service';
 import { User } from '../../models/user.model';
 import { Photo } from '../../models/photo.model';
 import { Folder } from '../../models/folder.model';
+import { CustomTreeComponent, TreeNode } from '../../components/custom-tree/custom-tree.component';
 
 /**
  * Interface estendida para fotos com URL de visualização
@@ -39,15 +41,18 @@ interface PhotoWithUrl extends Photo {
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     CardModule,
     ButtonModule,
     ProgressBarModule,
     FileUploadModule,
     ToastModule,
     MenuModule,
-    TreeModule,
     TooltipModule,
-    NavbarComponent
+    DialogModule,
+    InputTextModule,
+    NavbarComponent,
+    CustomTreeComponent
   ],
   providers: [MessageService],
   templateUrl: './user-dashboard.component.html',
@@ -72,8 +77,13 @@ export class UserDashboardComponent implements OnInit {
   isLoadingPhotos = signal(false);
   selectedFile = signal<{ name: string; path: string } | null>(null);
 
-  // Tree nodes para exibição de pastas
-  folderNodes: TreeNode[] = [];
+  // Signals para modal de edição
+  showEditDialog = signal(false);
+  editingFolder = signal<Folder | null>(null);
+  newFolderName = signal('');
+
+  // Computed signal para tree nodes
+  treeNodes = computed(() => this.convertToTreeNodes(this.folders()));
 
   ngOnInit(): void {
     // Verifica autenticação
@@ -87,6 +97,38 @@ export class UserDashboardComponent implements OnInit {
   }
 
   /**
+   * Converte Folders para TreeNodes
+   */
+  private convertToTreeNodes(folders: Folder[], parentId: string | null = null): TreeNode[] {
+    const filtered = folders.filter(f => f.parentId === parentId);
+    
+    return filtered.map(folder => ({
+      id: folder.id,
+      label: folder.name,
+      data: folder,
+      children: this.convertToTreeNodes(folders, folder.id),
+      expanded: true,
+      selected: folder.id === this.selectedFolderId()
+    }));
+  }
+
+  /**
+   * Constrói tree nodes com nó raiz "Todas as fotos"
+   */
+  getRootTreeNodes(): TreeNode[] {
+    return [
+      {
+        id: 'root',
+        label: 'Todas as fotos',
+        data: null,
+        children: this.treeNodes(),
+        expanded: true,
+        selected: this.selectedFolderId() === null
+      }
+    ];
+  }
+
+  /**
    * Carrega dados de pastas e fotos
    */
   loadData(): void {
@@ -95,7 +137,6 @@ export class UserDashboardComponent implements OnInit {
 
     const userFolders = this.storageService.getUserFolders(user.id);
     this.folders.set(userFolders);
-    this.buildFolderTree(userFolders);
     this.loadPhotos();
   }
 
@@ -135,7 +176,7 @@ export class UserDashboardComponent implements OnInit {
       this.uploadService.getDownloadUrl(photo.s3Key || '').pipe(
         catchError(error => {
           console.error(`Erro ao carregar URL para ${photo.name}:`, error);
-          return of(null); // Retorna null em caso de erro
+          return of(null);
         })
       )
     );
@@ -160,37 +201,14 @@ export class UserDashboardComponent implements OnInit {
   }
 
   /**
-   * Constrói árvore de pastas para o componente tree
-   */
-  buildFolderTree(folders: Folder[]): void {
-    const buildNode = (folderId: string | null): TreeNode[] => {
-      return folders
-        .filter(f => f.parentId === folderId)
-        .map(folder => ({
-          label: folder.name,
-          data: folder.id,
-          icon: 'pi pi-folder',
-          expanded: true,
-          children: buildNode(folder.id)
-        }));
-    };
-
-    this.folderNodes = [
-      {
-        label: 'Todas as fotos',
-        data: null,
-        icon: 'pi pi-folder-open',
-        expanded: true,
-        children: buildNode(null)
-      }
-    ];
-  }
-
-  /**
    * Seleciona uma pasta no tree
    */
-  onFolderSelect(event: any): void {
-    this.selectedFolderId.set(event.node.data);
+  onFolderSelect(event: { node: TreeNode, data: any }): void {
+    if (event.data) {
+      this.selectedFolderId.set(event.data.id);
+    } else {
+      this.selectedFolderId.set(null);
+    }
     this.loadPhotos();
   }
 
@@ -211,52 +229,100 @@ export class UserDashboardComponent implements OnInit {
 
   /**
    * Cria subpasta dentro de uma pasta existente
+   * Recebe o objeto Folder diretamente do custom-tree
    */
-  createSubfolder(parentFolderId: string, event: Event): void {
-    event.stopPropagation();
+  createSubfolder(folder: Folder | null): void {
+    console.log('createSubfolder chamado com:', folder);
+    
+    // Ignora se for o nó raiz (null)
+    if (!folder) {
+      console.warn('Tentou criar subpasta no nó raiz (null) - ignorado');
+      return;
+    }
+    
     const user = this.currentUser();
     if (!user) return;
 
     const folderName = prompt('Nome da subpasta:');
     if (!folderName || !folderName.trim()) return;
 
-    this.storageService.createFolder(user.id, folderName.trim(), parentFolderId);
+    this.storageService.createFolder(user.id, folderName.trim(), folder.id);
     this.loadData();
     this.showSuccess('Subpasta criada', `Subpasta "${folderName}" criada com sucesso`);
   }
 
   /**
-   * Edita nome de uma pasta
+   * Abre modal para editar nome de uma pasta
+   * Recebe o objeto Folder diretamente do custom-tree
    */
-  editFolder(folderId: string, event: Event): void {
-    event.stopPropagation();
-    const folder = this.folders().find(f => f.id === folderId);
-    if (!folder) return;
+  editFolder(folder: Folder | null): void {
+    console.log('editFolder chamado com:', folder);
 
-    const newName = prompt('Novo nome da pasta:', folder.name);
-    if (!newName || !newName.trim() || newName.trim() === folder.name) return;
+    // Se for null (nó raiz), ignora
+    if (!folder) {
+      console.warn('Tentou editar o nó raiz (null) - ignorado');
+      return;
+    }
 
-    this.storageService.renameFolder(folderId, newName.trim());
+    // Abre o modal com o folder selecionado
+    this.editingFolder.set(folder);
+    this.newFolderName.set(folder.name);
+    this.showEditDialog.set(true);
+  }
+
+  /**
+   * Salva a edição do nome da pasta
+   */
+  saveEditFolder(): void {
+    const folder = this.editingFolder();
+    const newName = this.newFolderName().trim();
+
+    if (!folder || !newName) {
+      this.showError('Erro', 'Nome da pasta não pode estar vazio');
+      return;
+    }
+
+    if (newName === folder.name) {
+      this.closeEditDialog();
+      return;
+    }
+
+    this.storageService.renameFolder(folder.id, newName);
     this.loadData();
     this.showSuccess('Pasta renomeada', `Pasta renomeada para "${newName}"`);
+    this.closeEditDialog();
+  }
+
+  /**
+   * Fecha o modal de edição
+   */
+  closeEditDialog(): void {
+    this.showEditDialog.set(false);
+    this.editingFolder.set(null);
+    this.newFolderName.set('');
   }
 
   /**
    * Exclui uma pasta
+   * Recebe o objeto Folder diretamente do custom-tree
    */
-  deleteFolder(folderId: string, event: Event): void {
-    event.stopPropagation();
-    const folder = this.folders().find(f => f.id === folderId);
-    if (!folder) return;
-
+  deleteFolder(folder: Folder | null): void {
+    console.log('deleteFolder chamado com:', folder);
+    
+    // Ignora se for o nó raiz (null)
+    if (!folder) {
+      console.warn('Tentou deletar o nó raiz (null) - ignorado');
+      return;
+    }
+    
     if (!confirm(`Tem certeza que deseja excluir a pasta "${folder.name}"? Todas as fotos dentro dela serão movidas para a raiz.`)) {
       return;
     }
 
-    this.storageService.deleteFolder(folderId);
+    this.storageService.deleteFolder(folder.id);
     this.loadData();
 
-    if (this.selectedFolderId() === folderId) {
+    if (this.selectedFolderId() === folder.id) {
       this.selectedFolderId.set(null);
     }
 
@@ -265,44 +331,33 @@ export class UserDashboardComponent implements OnInit {
 
   /**
    * Manipula seleção de arquivos
-   * Agora usa uploadAndGetUrl para obter a URL de visualização imediatamente
    */
   async onFileSelect(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
-    const files = input.files;
-    if (!files || !this.currentUser()) return;
+    if (!input.files || input.files.length === 0) return;
+
+    const user = this.currentUser();
+    if (!user) return;
 
     this.isUploading.set(true);
-    const user = this.currentUser()!;
 
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
+    for (const file of Array.from(input.files)) {
+      const filePath = (file as any).webkitRelativePath || file.name;
+      this.selectedFile.set({ name: file.name, path: filePath });
 
-      this.selectedFile.set({
-        name: file.name,
-        path: file.name
-      });
-
-      // Valida tipo de arquivo
-      if (!file.type.startsWith('image/')) {
-        this.showError('Erro no upload', `${file.name} não é uma imagem válida`);
-        continue;
-      }
-
-      // Valida limite de storage
+      const currentStorage = user.storageUsed;
       const storageLimit = this.storageService.getStorageLimit(user.plan);
-      if (user.storageUsed + file.size > storageLimit) {
+
+      if (storageLimit !== Infinity && currentStorage + file.size > storageLimit) {
         this.showError('Limite excedido', 'Você atingiu o limite de armazenamento do seu plano');
         continue;
       }
 
       try {
-        // Upload para S3 e obtém URL de visualização
         this.uploadService.uploadAndGetUrl(file).subscribe({
           next: (result: UploadResponse) => {
             console.log('Upload S3 bem-sucedido:', result);
 
-            // Salvar metadados da foto no localStorage
             const photo: Photo = {
               id: crypto.randomUUID(),
               userId: user.id,
@@ -311,24 +366,21 @@ export class UserDashboardComponent implements OnInit {
               size: file.size,
               type: file.type,
               uploadedAt: new Date().toISOString(),
-              dataUrl: result.fileUrl,      // URL pré-assinada inicial
-              s3Key: result.fileKey,         // Chave S3 para gerar novas URLs
-              bucketName: result.bucketName  // Nome do bucket
+              dataUrl: result.fileUrl,
+              s3Key: result.fileKey,
+              bucketName: result.bucketName
             };
 
-            // Salvar metadados
             const photos = this.storageService.getPhotos();
             photos.push(photo);
             this.storageService.savePhotos(photos);
 
-            // Atualizar storage usado
             this.storageService.updateUser(user.id, {
               storageUsed: user.storageUsed + file.size
             });
 
             this.showSuccess('Upload realizado!', `${file.name} foi enviada com sucesso`);
 
-            // Atualiza user no signal
             const updatedUser = this.storageService.getCurrentUser();
             if (updatedUser) {
               this.currentUser.set(updatedUser);
@@ -360,7 +412,6 @@ export class UserDashboardComponent implements OnInit {
 
   /**
    * Faz download de uma foto
-   * Gera nova URL pré-assinada para download
    */
   downloadPhoto(photo: PhotoWithUrl): void {
     if (!photo.s3Key) {
@@ -385,61 +436,54 @@ export class UserDashboardComponent implements OnInit {
 
   /**
    * Deleta uma foto
-   * TODO: Implementar exclusão no S3 também
    */
   deletePhoto(photo: PhotoWithUrl): void {
-  if (!confirm('Tem certeza que deseja excluir esta foto?')) {
-    return;
-  }
-
-  // Se a foto tem s3Key, deleta do S3 também
-  if (photo.s3Key) {
-    this.uploadService.deleteFile(photo.s3Key).subscribe({
-      next: (response) => {
-        console.log('Arquivo deletado do S3:', response);
-        
-        // Remove do localStorage
-        this.storageService.deletePhoto(photo.id);
-        this.showSuccess('Foto excluída', 'A foto foi removida do S3 e do seu armazenamento');
-
-        // Atualiza user no signal
-        const updatedUser = this.storageService.getCurrentUser();
-        if (updatedUser) {
-          this.currentUser.set(updatedUser);
-        }
-
-        this.loadPhotos();
-      },
-      error: (error) => {
-        console.error('Erro ao deletar do S3:', error);
-        
-        // Mesmo com erro no S3, remove do localStorage
-        this.storageService.deletePhoto(photo.id);
-        this.showError('Aviso', 'A foto foi removida localmente, mas pode ainda estar no S3');
-        
-        this.loadPhotos();
-      }
-    });
-  } else {
-    // Foto antiga sem s3Key, só remove do localStorage
-    this.storageService.deletePhoto(photo.id);
-    this.showSuccess('Foto excluída', 'A foto foi removida do seu armazenamento');
-
-    const updatedUser = this.storageService.getCurrentUser();
-    if (updatedUser) {
-      this.currentUser.set(updatedUser);
+    if (!confirm('Tem certeza que deseja excluir esta foto?')) {
+      return;
     }
 
-    this.loadPhotos();
+    if (photo.s3Key) {
+      this.uploadService.deleteFile(photo.s3Key).subscribe({
+        next: (response) => {
+          console.log('Arquivo deletado do S3:', response);
+          
+          this.storageService.deletePhoto(photo.id);
+          this.showSuccess('Foto excluída', 'A foto foi removida do S3 e do seu armazenamento');
+
+          const updatedUser = this.storageService.getCurrentUser();
+          if (updatedUser) {
+            this.currentUser.set(updatedUser);
+          }
+
+          this.loadPhotos();
+        },
+        error: (error) => {
+          console.error('Erro ao deletar do S3:', error);
+          
+          this.storageService.deletePhoto(photo.id);
+          this.showError('Aviso', 'A foto foi removida localmente, mas pode ainda estar no S3');
+          
+          this.loadPhotos();
+        }
+      });
+    } else {
+      this.storageService.deletePhoto(photo.id);
+      this.showSuccess('Foto excluída', 'A foto foi removida do seu armazenamento');
+
+      const updatedUser = this.storageService.getCurrentUser();
+      if (updatedUser) {
+        this.currentUser.set(updatedUser);
+      }
+
+      this.loadPhotos();
+    }
   }
-}
 
   /**
-   * Obtém itens do menu de mover para uma foto (lista plana)
+   * Obtém itens do menu de mover
    */
   getMoveMenuItems(photo: PhotoWithUrl): MenuItem[] {
     const allFolders = this.folders();
-
     const flatFolderList: MenuItem[] = [];
 
     const buildFlatList = (parentId: string | null, level: number = 0): void => {
@@ -554,15 +598,14 @@ export class UserDashboardComponent implements OnInit {
   }
 
   /**
- * Trata erro ao carregar imagem
- */
-onImageError(event: Event, photo: PhotoWithUrl): void {
-  console.error('Erro ao carregar imagem:', photo.name);
-  
-  // Marca a foto como tendo erro
-  const updatedPhotos = this.photos().map(p => 
-    p.id === photo.id ? { ...p, displayUrl: undefined, isLoadingUrl: false } : p
-  );
-  this.photos.set(updatedPhotos);
-}
+   * Trata erro ao carregar imagem
+   */
+  onImageError(event: Event, photo: PhotoWithUrl): void {
+    console.error('Erro ao carregar imagem:', photo.name);
+    
+    const updatedPhotos = this.photos().map(p => 
+      p.id === photo.id ? { ...p, displayUrl: undefined, isLoadingUrl: false } : p
+    );
+    this.photos.set(updatedPhotos);
+  }
 }

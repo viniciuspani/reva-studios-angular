@@ -2,6 +2,48 @@
   <app-navbar></app-navbar>
   <p-toast></p-toast>
 
+  <!-- Modal de Edição de Pasta -->
+  <p-dialog
+    [(visible)]="showEditDialog"
+    [header]="'Editar Pasta'"
+    [modal]="true"
+    [style]="{width: '450px'}"
+    [draggable]="false"
+    [resizable]="false"
+    (onHide)="closeEditDialog()">
+
+    <div class="edit-dialog-content">
+      <label for="folderName" class="edit-label">Nome da Pasta</label>
+      <input
+        id="folderName"
+        type="text"
+        pInputText
+        [(ngModel)]="newFolderName"
+        (keyup.enter)="saveEditFolder()"
+        (keyup.escape)="closeEditDialog()"
+        class="edit-input"
+        placeholder="Digite o nome da pasta"
+        autofocus />
+    </div>
+
+    <ng-template pTemplate="footer">
+      <div class="dialog-footer">
+        <p-button
+          label="Cancelar"
+          icon="pi pi-times"
+          (onClick)="closeEditDialog()"
+          styleClass="p-button-text p-button-secondary">
+        </p-button>
+        <p-button
+          label="Salvar"
+          icon="pi pi-check"
+          (onClick)="saveEditFolder()"
+          styleClass="p-button-primary">
+        </p-button>
+      </div>
+    </ng-template>
+  </p-dialog>
+
   <div class="dashboard-container">
     <!-- Header -->
     <div class="dashboard-header">
@@ -68,30 +110,14 @@
           </div>
         </ng-template>
 
-        <p-tree [value]="folderNodes" selectionMode="single" (onNodeSelect)="onFolderSelect($event)"
-          styleClass="w-full border-none folders-tree" class="folders-tree">
-          <ng-template let-node pTemplate="default">
-            <div class="custom-tree-node">
-              <span class="folder-label">{{ node.label }}</span>
-              <div class="folder-actions" *ngIf="node.data !== null" (click)="$event.stopPropagation()">
-                <p-button icon="pi pi-folder-plus" [rounded]="true" [text]="true" size="small"
-                  (onClick)="createSubfolder(node.data, $event)"
-                  [pTooltip]="languageService.t('userDashboard.createSubfolder')" tooltipPosition="top"
-                  styleClass="folder-action-btn">
-                </p-button>
-                <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" size="small"
-                  (onClick)="editFolder(node.data, $event)" [pTooltip]="languageService.t('userDashboard.editFolder')"
-                  tooltipPosition="top" styleClass="folder-action-btn">
-                </p-button>
-                <p-button icon="pi pi-trash" [rounded]="true" [text]="true" size="small"
-                  (onClick)="deleteFolder(node.data, $event)"
-                  [pTooltip]="languageService.t('userDashboard.deleteFolder')" tooltipPosition="top"
-                  styleClass="folder-action-btn folder-delete-btn">
-                </p-button>
-              </div>
-            </div>
-          </ng-template>
-        </p-tree>
+        <!-- CUSTOM TREE COMPONENT -->
+        <app-custom-tree
+          [nodes]="getRootTreeNodes()"
+          (nodeSelect)="onFolderSelect($event)"
+          (createSubfolder)="createSubfolder($event)"
+          (editFolder)="editFolder($event)"
+          (deleteFolder)="deleteFolder($event)">
+        </app-custom-tree>
       </p-card>
 
       <!-- Área principal -->
