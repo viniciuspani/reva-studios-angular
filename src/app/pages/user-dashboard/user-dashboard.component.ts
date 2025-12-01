@@ -128,7 +128,7 @@ export class UserDashboardComponent implements OnInit {
     return [
       {
         id: 'root',
-        label: 'Todas as fotos',
+        label: this.languageService.t('userDashboard.allPhotos'),
         data: null,
         children: this.treeNodes(),
         expanded: true,
@@ -204,7 +204,10 @@ export class UserDashboardComponent implements OnInit {
       error: (error) => {
         console.error('Erro ao carregar URLs das fotos:', error);
         this.isLoadingPhotos.set(false);
-        this.showError('Erro', 'Falha ao carregar algumas imagens');
+        this.showError(
+          this.languageService.t('userDashboard.messages.error'),
+          this.languageService.t('userDashboard.messages.loadImageError')
+        );
       }
     });
   }
@@ -265,7 +268,10 @@ export class UserDashboardComponent implements OnInit {
     const parentFolder = this.parentFolderForCreate();
 
     if (!folderName) {
-      this.showError('Erro', 'Nome da pasta não pode estar vazio');
+      this.showError(
+        this.languageService.t('userDashboard.messages.error'),
+        this.languageService.t('userDashboard.messages.folderNameEmpty')
+      );
       return;
     }
 
@@ -273,10 +279,10 @@ export class UserDashboardComponent implements OnInit {
     this.loadData();
 
     const message = parentFolder
-      ? `Subpasta "${folderName}" criada em "${parentFolder.name}"`
-      : `Pasta "${folderName}" criada com sucesso`;
+      ? this.languageService.t('userDashboard.messages.subfolderCreatedIn').replace('{name}', folderName).replace('{parent}', parentFolder.name)
+      : this.languageService.t('userDashboard.messages.folderCreatedSuccess').replace('{name}', folderName);
 
-    this.showSuccess('Pasta criada', message);
+    this.showSuccess(this.languageService.t('userDashboard.messages.folderCreated'), message);
     this.closeCreateDialog();
   }
 
@@ -316,7 +322,10 @@ export class UserDashboardComponent implements OnInit {
     const newName = this.newFolderName().trim();
 
     if (!folder || !newName) {
-      this.showError('Erro', 'Nome da pasta não pode estar vazio');
+      this.showError(
+        this.languageService.t('userDashboard.messages.error'),
+        this.languageService.t('userDashboard.messages.folderNameEmpty')
+      );
       return;
     }
 
@@ -327,7 +336,10 @@ export class UserDashboardComponent implements OnInit {
 
     this.storageService.renameFolder(folder.id, newName);
     this.loadData();
-    this.showSuccess('Pasta renomeada', `Pasta renomeada para "${newName}"`);
+    this.showSuccess(
+      this.languageService.t('userDashboard.messages.folderRenamed'),
+      this.languageService.t('userDashboard.messages.folderRenamedTo').replace('{name}', newName)
+    );
     this.closeEditDialog();
   }
 
@@ -371,7 +383,10 @@ export class UserDashboardComponent implements OnInit {
       this.selectedFolderId.set(null);
     }
 
-    this.showSuccess('Pasta excluída', `Pasta "${folder.name}" excluída com sucesso`);
+    this.showSuccess(
+      this.languageService.t('userDashboard.messages.folderDeleted'),
+      this.languageService.t('userDashboard.messages.folderDeletedSuccess').replace('{name}', folder.name)
+    );
     this.closeDeleteDialog();
   }
 
@@ -403,7 +418,10 @@ export class UserDashboardComponent implements OnInit {
       const storageLimit = this.storageService.getStorageLimit(user.plan);
 
       if (storageLimit !== Infinity && currentStorage + file.size > storageLimit) {
-        this.showError('Limite excedido', 'Você atingiu o limite de armazenamento do seu plano');
+        this.showError(
+          this.languageService.t('userDashboard.messages.storageLimitExceeded'),
+          this.languageService.t('userDashboard.messages.storageLimitExceededDesc')
+        );
         continue;
       }
 
@@ -433,7 +451,10 @@ export class UserDashboardComponent implements OnInit {
               storageUsed: user.storageUsed + file.size
             });
 
-            this.showSuccess('Upload realizado!', `${file.name} foi enviada com sucesso`);
+            this.showSuccess(
+              this.languageService.t('userDashboard.messages.uploadSuccess'),
+              this.languageService.t('userDashboard.messages.uploadSuccessDesc').replace('{name}', file.name)
+            );
 
             const updatedUser = this.storageService.getCurrentUser();
             if (updatedUser) {
@@ -444,12 +465,15 @@ export class UserDashboardComponent implements OnInit {
           },
           error: (error) => {
             console.error('Erro no upload S3:', error);
-            this.showError('Erro no upload', `Falha ao enviar ${file.name}`);
+            this.showError(
+              this.languageService.t('userDashboard.messages.uploadError'),
+              this.languageService.t('userDashboard.messages.uploadErrorDesc').replace('{name}', file.name)
+            );
           }
         });
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Erro ao enviar arquivo';
-        this.showError('Erro no upload', errorMessage);
+        const errorMessage = error instanceof Error ? error.message : this.languageService.t('userDashboard.messages.uploadError');
+        this.showError(this.languageService.t('userDashboard.messages.uploadError'), errorMessage);
       }
     }
 
@@ -469,7 +493,10 @@ export class UserDashboardComponent implements OnInit {
    */
   downloadPhoto(photo: PhotoWithUrl): void {
     if (!photo.s3Key) {
-      this.showError('Erro', 'Chave S3 não encontrada');
+      this.showError(
+        this.languageService.t('userDashboard.messages.error'),
+        this.languageService.t('userDashboard.messages.s3KeyNotFound')
+      );
       return;
     }
 
@@ -479,11 +506,17 @@ export class UserDashboardComponent implements OnInit {
         link.href = url;
         link.download = photo.name;
         link.click();
-        this.showSuccess('Download iniciado', `Baixando ${photo.name}`);
+        this.showSuccess(
+          this.languageService.t('userDashboard.messages.downloadStarted'),
+          this.languageService.t('userDashboard.messages.downloadStartedDesc').replace('{name}', photo.name)
+        );
       },
       error: (error) => {
         console.error('Erro ao gerar URL de download:', error);
-        this.showError('Erro', 'Falha ao gerar link de download');
+        this.showError(
+          this.languageService.t('userDashboard.messages.error'),
+          this.languageService.t('userDashboard.messages.downloadError')
+        );
       }
     });
   }
@@ -492,7 +525,7 @@ export class UserDashboardComponent implements OnInit {
    * Deleta uma foto
    */
   deletePhoto(photo: PhotoWithUrl): void {
-    if (!confirm('Tem certeza que deseja excluir esta foto?')) {
+    if (!confirm(this.languageService.t('userDashboard.messages.deletePhotoConfirm'))) {
       return;
     }
 
@@ -500,9 +533,12 @@ export class UserDashboardComponent implements OnInit {
       this.uploadService.deleteFile(photo.s3Key).subscribe({
         next: (response) => {
           console.log('Arquivo deletado do S3:', response);
-          
+
           this.storageService.deletePhoto(photo.id);
-          this.showSuccess('Foto excluída', 'A foto foi removida do S3 e do seu armazenamento');
+          this.showSuccess(
+            this.languageService.t('userDashboard.messages.photoDeleted'),
+            this.languageService.t('userDashboard.messages.photoDeletedFromS3')
+          );
 
           const updatedUser = this.storageService.getCurrentUser();
           if (updatedUser) {
@@ -513,16 +549,22 @@ export class UserDashboardComponent implements OnInit {
         },
         error: (error) => {
           console.error('Erro ao deletar do S3:', error);
-          
+
           this.storageService.deletePhoto(photo.id);
-          this.showError('Aviso', 'A foto foi removida localmente, mas pode ainda estar no S3');
-          
+          this.showError(
+            this.languageService.t('userDashboard.messages.warning'),
+            this.languageService.t('userDashboard.messages.photoDeletedWarning')
+          );
+
           this.loadPhotos();
         }
       });
     } else {
       this.storageService.deletePhoto(photo.id);
-      this.showSuccess('Foto excluída', 'A foto foi removida do seu armazenamento');
+      this.showSuccess(
+        this.languageService.t('userDashboard.messages.photoDeleted'),
+        this.languageService.t('userDashboard.messages.photoDeletedLocal')
+      );
 
       const updatedUser = this.storageService.getCurrentUser();
       if (updatedUser) {
@@ -559,7 +601,7 @@ export class UserDashboardComponent implements OnInit {
 
     return [
       {
-        label: 'Raiz (Todas as fotos)',
+        label: this.languageService.t('userDashboard.root'),
         icon: 'pi pi-folder-open',
         command: () => this.movePhoto(photo.id, null),
         styleClass: 'move-menu-item'
@@ -573,7 +615,10 @@ export class UserDashboardComponent implements OnInit {
    */
   movePhoto(photoId: string, folderId: string | null): void {
     this.storageService.movePhotoToFolder(photoId, folderId);
-    this.showSuccess('Foto movida', 'Foto movida com sucesso');
+    this.showSuccess(
+      this.languageService.t('userDashboard.messages.photoMoved'),
+      this.languageService.t('userDashboard.messages.photoMovedSuccess')
+    );
     this.loadPhotos();
   }
 
@@ -605,7 +650,7 @@ export class UserDashboardComponent implements OnInit {
     if (!user) return '';
 
     const limit = this.storageService.getStorageLimit(user.plan);
-    return limit === Infinity ? 'Ilimitado' : this.formatBytes(limit);
+    return limit === Infinity ? this.languageService.t('userDashboard.unlimited') : this.formatBytes(limit);
   }
 
   /**
@@ -623,10 +668,10 @@ export class UserDashboardComponent implements OnInit {
    */
   getCurrentFolderName(): string {
     const folderId = this.selectedFolderId();
-    if (!folderId) return 'Todas as fotos';
+    if (!folderId) return this.languageService.t('userDashboard.allPhotos');
 
     const folder = this.folders().find(f => f.id === folderId);
-    return folder?.name || 'Todas as fotos';
+    return folder?.name || this.languageService.t('userDashboard.allPhotos');
   }
 
   /**
