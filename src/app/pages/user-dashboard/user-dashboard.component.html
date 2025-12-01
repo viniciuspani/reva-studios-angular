@@ -2,6 +2,50 @@
   <app-navbar></app-navbar>
   <p-toast></p-toast>
 
+  <!-- Modal de Criar Pasta -->
+  <p-dialog
+    [(visible)]="showCreateDialog"
+    [header]="parentFolderForCreate() ? 'Criar Subpasta' : 'Criar Nova Pasta'"
+    [modal]="true"
+    [style]="{width: '450px'}"
+    [draggable]="false"
+    [resizable]="false"
+    (onHide)="closeCreateDialog()">
+
+    <div class="edit-dialog-content">
+      <label for="createFolderName" class="edit-label">
+        {{ parentFolderForCreate() ? 'Nome da Subpasta em "' + parentFolderForCreate()!.name + '"' : 'Nome da Pasta' }}
+      </label>
+      <input
+        id="createFolderName"
+        type="text"
+        pInputText
+        [(ngModel)]="createFolderName"
+        (keyup.enter)="saveCreateFolder()"
+        (keyup.escape)="closeCreateDialog()"
+        class="edit-input"
+        placeholder="Digite o nome da pasta"
+        autofocus />
+    </div>
+
+    <ng-template pTemplate="footer">
+      <div class="dialog-footer">
+        <p-button
+          label="Cancelar"
+          icon="pi pi-times"
+          (onClick)="closeCreateDialog()"
+          styleClass="p-button-text p-button-secondary">
+        </p-button>
+        <p-button
+          label="Criar"
+          icon="pi pi-plus"
+          (onClick)="saveCreateFolder()"
+          styleClass="p-button-primary">
+        </p-button>
+      </div>
+    </ng-template>
+  </p-dialog>
+
   <!-- Modal de Edição de Pasta -->
   <p-dialog
     [(visible)]="showEditDialog"
@@ -39,6 +83,46 @@
           icon="pi pi-check"
           (onClick)="saveEditFolder()"
           styleClass="p-button-primary">
+        </p-button>
+      </div>
+    </ng-template>
+  </p-dialog>
+
+  <!-- Modal de Deletar Pasta -->
+  <p-dialog
+    [(visible)]="showDeleteDialog"
+    [header]="'Excluir Pasta'"
+    [modal]="true"
+    [style]="{width: '450px'}"
+    [draggable]="false"
+    [resizable]="false"
+    (onHide)="closeDeleteDialog()">
+
+    <div class="delete-dialog-content">
+      <div class="delete-warning-icon">
+        <i class="pi pi-exclamation-triangle"></i>
+      </div>
+      <h3>Tem certeza que deseja excluir?</h3>
+      <p class="delete-folder-name">{{ folderToDelete()?.name }}</p>
+      <p class="delete-warning-text">
+        Todas as fotos dentro desta pasta serão movidas para a raiz.
+        Esta ação não pode ser desfeita.
+      </p>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <div class="dialog-footer">
+        <p-button
+          label="Cancelar"
+          icon="pi pi-times"
+          (onClick)="closeDeleteDialog()"
+          styleClass="p-button-text p-button-secondary">
+        </p-button>
+        <p-button
+          label="Excluir"
+          icon="pi pi-trash"
+          (onClick)="confirmDeleteFolder()"
+          styleClass="p-button-danger">
         </p-button>
       </div>
     </ng-template>

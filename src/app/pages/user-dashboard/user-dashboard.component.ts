@@ -82,6 +82,15 @@ export class UserDashboardComponent implements OnInit {
   editingFolder = signal<Folder | null>(null);
   newFolderName = signal('');
 
+  // Signals para modal de criar pasta
+  showCreateDialog = signal(false);
+  parentFolderForCreate = signal<Folder | null>(null);
+  createFolderName = signal('');
+
+  // Signals para modal de deletar pasta
+  showDeleteDialog = signal(false);
+  folderToDelete = signal<Folder | null>(null);
+
   // Computed signal para tree nodes
   treeNodes = computed(() => this.convertToTreeNodes(this.folders()));
 
@@ -213,42 +222,71 @@ export class UserDashboardComponent implements OnInit {
   }
 
   /**
-   * Cria nova pasta
+   * Abre modal para criar nova pasta raiz
    */
   createFolder(): void {
     const user = this.currentUser();
     if (!user) return;
 
-    const folderName = prompt('Nome da pasta:');
-    if (!folderName || !folderName.trim()) return;
-
-    this.storageService.createFolder(user.id, folderName.trim(), this.selectedFolderId());
-    this.loadData();
-    this.showSuccess('Pasta criada', `Pasta "${folderName}" criada com sucesso`);
+    this.parentFolderForCreate.set(null);
+    this.createFolderName.set('');
+    this.showCreateDialog.set(true);
   }
 
   /**
-   * Cria subpasta dentro de uma pasta existente
+   * Abre modal para criar subpasta dentro de uma pasta existente
    * Recebe o objeto Folder diretamente do custom-tree
    */
   createSubfolder(folder: Folder | null): void {
     console.log('createSubfolder chamado com:', folder);
-    
+
     // Ignora se for o nó raiz (null)
     if (!folder) {
       console.warn('Tentou criar subpasta no nó raiz (null) - ignorado');
       return;
     }
-    
+
     const user = this.currentUser();
     if (!user) return;
 
-    const folderName = prompt('Nome da subpasta:');
-    if (!folderName || !folderName.trim()) return;
+    this.parentFolderForCreate.set(folder);
+    this.createFolderName.set('');
+    this.showCreateDialog.set(true);
+  }
 
-    this.storageService.createFolder(user.id, folderName.trim(), folder.id);
+  /**
+   * Salva a nova pasta/subpasta
+   */
+  saveCreateFolder(): void {
+    const user = this.currentUser();
+    if (!user) return;
+
+    const folderName = this.createFolderName().trim();
+    const parentFolder = this.parentFolderForCreate();
+
+    if (!folderName) {
+      this.showError('Erro', 'Nome da pasta não pode estar vazio');
+      return;
+    }
+
+    this.storageService.createFolder(user.id, folderName, parentFolder?.id || null);
     this.loadData();
-    this.showSuccess('Subpasta criada', `Subpasta "${folderName}" criada com sucesso`);
+
+    const message = parentFolder
+      ? `Subpasta "${folderName}" criada em "${parentFolder.name}"`
+      : `Pasta "${folderName}" criada com sucesso`;
+
+    this.showSuccess('Pasta criada', message);
+    this.closeCreateDialog();
+  }
+
+  /**
+   * Fecha o modal de criar pasta
+   */
+  closeCreateDialog(): void {
+    this.showCreateDialog.set(false);
+    this.parentFolderForCreate.set(null);
+    this.createFolderName.set('');
   }
 
   /**
@@ -303,21 +341,28 @@ export class UserDashboardComponent implements OnInit {
   }
 
   /**
-   * Exclui uma pasta
+   * Abre modal para confirmar exclusão de pasta
    * Recebe o objeto Folder diretamente do custom-tree
    */
   deleteFolder(folder: Folder | null): void {
     console.log('deleteFolder chamado com:', folder);
-    
+
     // Ignora se for o nó raiz (null)
     if (!folder) {
       console.warn('Tentou deletar o nó raiz (null) - ignorado');
       return;
     }
-    
-    if (!confirm(`Tem certeza que deseja excluir a pasta "${folder.name}"? Todas as fotos dentro dela serão movidas para a raiz.`)) {
-      return;
-    }
+
+    this.folderToDelete.set(folder);
+    this.showDeleteDialog.set(true);
+  }
+
+  /**
+   * Confirma e executa a exclusão da pasta
+   */
+  confirmDeleteFolder(): void {
+    const folder = this.folderToDelete();
+    if (!folder) return;
 
     this.storageService.deleteFolder(folder.id);
     this.loadData();
@@ -327,6 +372,15 @@ export class UserDashboardComponent implements OnInit {
     }
 
     this.showSuccess('Pasta excluída', `Pasta "${folder.name}" excluída com sucesso`);
+    this.closeDeleteDialog();
+  }
+
+  /**
+   * Fecha o modal de deletar pasta
+   */
+  closeDeleteDialog(): void {
+    this.showDeleteDialog.set(false);
+    this.folderToDelete.set(null);
   }
 
   /**

@@ -482,6 +482,52 @@
   gap: 0.75rem;
 }
 
+.delete-dialog-content {
+  padding: 1rem 0;
+  text-align: center;
+
+  .delete-warning-icon {
+    width: 4rem;
+    height: 4rem;
+    margin: 0 auto 1.5rem;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #fee2e2, #fecaca);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    i {
+      font-size: 2rem;
+      color: #dc2626;
+    }
+  }
+
+  h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0 0 1rem;
+  }
+
+  .delete-folder-name {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #7c3aed;
+    margin: 0 0 1rem;
+    padding: 0.75rem;
+    background: #f3f4f6;
+    border-radius: 0.5rem;
+    border-left: 4px solid #7c3aed;
+  }
+
+  .delete-warning-text {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin: 0;
+    line-height: 1.5;
+  }
+}
+
 ::ng-deep {
   .p-dialog {
     .p-dialog-header {
@@ -521,6 +567,16 @@
 
     &:hover {
       background: linear-gradient(135deg, #6d28d9, #9333ea);
+    }
+  }
+
+  .p-button-danger {
+    background: linear-gradient(135deg, #dc2626, #f87171);
+    border: none;
+    color: white;
+
+    &:hover {
+      background: linear-gradient(135deg, #b91c1c, #dc2626);
     }
   }
 }
