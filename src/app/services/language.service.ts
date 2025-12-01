@@ -13,15 +13,18 @@ export type Language = 'pt-BR' | 'en-US';
   providedIn: 'root'
 })
 export class LanguageService {
-  
-  // Signal reativo para o idioma atual
-  language = signal<Language>('pt-BR');
+
+  // Signal reativo para o idioma atual (padrão: EN-US)
+  language = signal<Language>('en-US');
 
   constructor() {
     // Carrega idioma salvo do localStorage
     const saved = localStorage.getItem('language') as Language;
     if (saved === 'en-US' || saved === 'pt-BR') {
       this.language.set(saved);
+    } else {
+      // Se não houver idioma salvo, define EN-US como padrão
+      this.setLanguage('en-US');
     }
   }
 
