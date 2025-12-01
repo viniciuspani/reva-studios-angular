@@ -18,13 +18,21 @@ export class LanguageService {
   language = signal<Language>('en-US');
 
   constructor() {
-    // Carrega idioma salvo do localStorage
+    // SEMPRE inicia com EN-US (reseta localStorage se necessário)
+    // Isso garante que todos os usuários iniciem em inglês
     const saved = localStorage.getItem('language') as Language;
-    if (saved === 'en-US' || saved === 'pt-BR') {
+
+    // Se não houver idioma salvo, define EN-US como padrão
+    if (!saved) {
+      localStorage.setItem('language', 'en-US');
+      this.language.set('en-US');
+    } else if (saved === 'en-US' || saved === 'pt-BR') {
+      // Usa o idioma salvo se for válido
       this.language.set(saved);
     } else {
-      // Se não houver idioma salvo, define EN-US como padrão
-      this.setLanguage('en-US');
+      // Se for inválido, reseta para EN-US
+      localStorage.setItem('language', 'en-US');
+      this.language.set('en-US');
     }
   }
 
@@ -68,7 +76,7 @@ export class LanguageService {
         mainHero: {
           title: 'Organize, compartilhe e encante',
           subtitle: 'Tudo em um só lugar.',
-          description: 'Uma plataforma inteligente que simplifica o dia a dia dos fotógrafos: armazenamento seguro, entrega de fotos e gestão completa de clientes.',
+          description: 'Uma plataforma inteligente para organizar, armazenar e entregar seus ensaios com segurança — tudo em um só lugar.',
           tryFree: 'Testar Gratuitamente',
           learnMore: 'Saiba Como Funciona'
         },
@@ -104,7 +112,7 @@ export class LanguageService {
         },
         finalCta: {
           title: 'Pronto para transformar seu fluxo de trabalho?',
-          description: 'Comece hoje mesmo e veja a diferença que o Reva Studio pode fazer.',
+          description: 'Comece hoje e descubra quanto tempo você pode economizar em cada ensaio.',
           button: 'Conheça Nossos Planos'
         },
         footer: {
@@ -410,7 +418,7 @@ export class LanguageService {
         mainHero: {
           title: 'Organize, share and delight',
           subtitle: 'Everything in one place.',
-          description: 'An intelligent platform that simplifies photographers\' daily work: secure storage, photo delivery and complete client management.',
+          description: 'An intelligent platform to securely organize, store, and deliver your essays — all in one place.',
           tryFree: 'Try it Free',
           learnMore: 'Learn How it Works'
         },
@@ -446,7 +454,7 @@ export class LanguageService {
         },
         finalCta: {
           title: 'Ready to transform your workflow?',
-          description: 'Start today and see the difference Reva Studio can make.',
+          description: 'Start today and discover how much time you can save on each rehearsal.',
           button: 'Explore Our Plans'
         },
         footer: {
