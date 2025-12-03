@@ -23,6 +23,20 @@ export interface DeleteResponse {
   bucketName: string;
 }
 
+export interface SimplePhoto {
+  key: string;
+  name: string;
+  size: number;
+  lastModified: string;
+}
+
+export interface ListPhotosResponse {
+  success: boolean;
+  folder: string;
+  photos: SimplePhoto[];
+  count: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -126,5 +140,61 @@ export class UploadService {
     
     const uploads = files.map(file => this.uploadAndGetUrl(file));
     return forkJoin(uploads);
+  }
+
+  // ========== MÉTODOS PARA PASTAS FIXAS DO S3 ==========
+
+  /**
+   * Lista fotos de uma pasta fixa do S3
+   */
+  listFixedFolderPhotos(folderName: string): Observable<ListPhotosResponse> {
+    console.log('Listando fotos da pasta fixa:', folderName);
+    
+    return this.http.get<ListPhotosResponse>(
+      `${this.apiUrl}/list-photos`,
+      {
+        params: { folder: folderName }
+      }
+    ).pipe(
+      catchError(error => {
+        console.error('Erro ao listar fotos da pasta fixa:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Lista fotos de "minhas-fotos"
+   */
+  getMinhasFotos(): Observable<ListPhotosResponse> {
+    return this.listFixedFolderPhotos('minhas-fotos');
+  }
+
+  /**
+   * Lista fotos de "minha-melhor-turma-de-ingles"
+   */
+  getTurmaIngles(): Observable<ListPhotosResponse> {
+    return this.listFixedFolderPhotos('minha-melhor-turma-de-ingles');
+  }
+
+  /**
+   * Verifica se uma pasta é uma pasta fixa do S3
+   */
+  isFixedFolder(folderId: string): boolean {
+    return folderId === 'fixed-minhas-fotos' || folderId === 'fixed-turma-ingles';
+  }
+
+  /**
+   * Obtém o nome da pasta no S3 baseado no ID
+   */
+  getFixedFolderName(folderId: string): string | null {
+    switch (folderId) {
+      case 'fixed-minhas-fotos':
+        return 'minhas-fotos';
+      case 'fixed-turma-ingles':
+        return 'minha-melhor-turma-de-ingles';
+      default:
+        return null;
+    }
   }
 }

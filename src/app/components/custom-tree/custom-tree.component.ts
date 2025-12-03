@@ -94,7 +94,7 @@ export class CustomTreeComponent {
       <span class="node-label" [title]="node.label">{{ node.label }}</span>
 
       <!-- Action buttons -->
-      <div class="node-actions" [hidden]="node.data === null">
+      <div class="node-actions" [hidden]="node.data === null || node.data?.isFixed">
         <button
           type="button"
           class="action-btn create-btn"

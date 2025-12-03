@@ -77,6 +77,22 @@ export class UserDashboardComponent implements OnInit {
   isLoadingPhotos = signal(false);
   selectedFile = signal<{ name: string; path: string } | null>(null);
 
+  // Pastas fixas do S3
+  readonly FIXED_FOLDERS = [
+    {
+      id: 'fixed-minhas-fotos',
+      name: 'Minhas Fotos',
+      s3Folder: 'minhas-fotos',
+      icon: 'pi-images'
+    },
+    {
+      id: 'fixed-turma-ingles',
+      name: 'Minha Melhor Turma de Inglês',
+      s3Folder: 'minha-melhor-turma-de-ingles',
+      icon: 'pi-book'
+    }
+  ] as const;
+
   // Signals para modal de edição
   showEditDialog = signal(false);
   editingFolder = signal<Folder | null>(null);
@@ -125,12 +141,30 @@ export class UserDashboardComponent implements OnInit {
    * Constrói tree nodes com nó raiz "Todas as fotos"
    */
   getRootTreeNodes(): TreeNode[] {
+    // Cria nodes para pastas fixas do S3
+    const fixedFolderNodes: TreeNode[] = this.FIXED_FOLDERS.map(folder => ({
+      id: folder.id,
+      label: folder.name,
+      data: {
+        id: folder.id,
+        name: folder.name,
+        isFixed: true,
+        s3Folder: folder.s3Folder
+      },
+      children: [],
+      expanded: false,
+      selected: this.selectedFolderId() === folder.id
+    }));
+
+    // Combina pastas fixas com pastas dinâmicas do usuário
+    const allChildren = [...fixedFolderNodes, ...this.treeNodes()];
+
     return [
       {
         id: 'root',
         label: this.languageService.t('userDashboard.allPhotos'),
         data: null,
-        children: this.treeNodes(),
+        children: allChildren,
         expanded: true,
         selected: this.selectedFolderId() === null
       }
@@ -157,16 +191,24 @@ export class UserDashboardComponent implements OnInit {
     if (!user) return;
 
     this.isLoadingPhotos.set(true);
+    const folderId = this.selectedFolderId();
 
-    const userPhotos = this.storageService.getUserPhotos(user.id, this.selectedFolderId());
-    
+    // Verifica se é uma pasta fixa do S3
+    if (folderId && this.isFixedFolder(folderId)) {
+      this.loadFixedFolderPhotos(folderId);
+      return;
+    }
+
+    // Carrega fotos das pastas dinâmicas (comportamento original)
+    const userPhotos = this.storageService.getUserPhotos(user.id, folderId);
+
     // Inicializa fotos sem URLs
     const photosWithUrl: PhotoWithUrl[] = userPhotos.map(photo => ({
       ...photo,
       displayUrl: undefined,
       isLoadingUrl: true
     }));
-    
+
     this.photos.set(photosWithUrl);
 
     // Carrega URLs pré-assinadas para cada foto
@@ -175,6 +217,66 @@ export class UserDashboardComponent implements OnInit {
     } else {
       this.isLoadingPhotos.set(false);
     }
+  }
+
+  /**
+   * Verifica se a pasta é uma pasta fixa do S3
+   */
+  private isFixedFolder(folderId: string): boolean {
+    return this.FIXED_FOLDERS.some(f => f.id === folderId);
+  }
+
+  /**
+   * Obtém o nome da pasta no S3 baseado no ID
+   */
+  private getFixedFolderName(folderId: string): string | null {
+    const folder = this.FIXED_FOLDERS.find(f => f.id === folderId);
+    return folder?.s3Folder || null;
+  }
+
+  /**
+   * Carrega fotos de uma pasta fixa do S3
+   */
+  private loadFixedFolderPhotos(folderId: string): void {
+    const s3FolderName = this.getFixedFolderName(folderId);
+    if (!s3FolderName) {
+      this.isLoadingPhotos.set(false);
+      return;
+    }
+
+    this.uploadService.listFixedFolderPhotos(s3FolderName).subscribe({
+      next: (response) => {
+        console.log('Fotos da pasta fixa carregadas:', response);
+
+        // Converte SimplePhoto para PhotoWithUrl
+        const photosWithUrl: PhotoWithUrl[] = response.photos.map(photo => ({
+          id: crypto.randomUUID(),
+          userId: this.currentUser()?.id || '',
+          folderId: folderId,
+          name: photo.name,
+          size: photo.size,
+          type: 'image/jpeg',
+          uploadedAt: photo.lastModified,
+          dataUrl: this.uploadService.getProxyImageUrl(photo.key),
+          displayUrl: this.uploadService.getProxyImageUrl(photo.key),
+          s3Key: photo.key,
+          bucketName: 'reva-studios-uploads',
+          isLoadingUrl: false
+        }));
+
+        this.photos.set(photosWithUrl);
+        this.isLoadingPhotos.set(false);
+      },
+      error: (error) => {
+        console.error('Erro ao carregar fotos da pasta fixa:', error);
+        this.photos.set([]);
+        this.isLoadingPhotos.set(false);
+        this.showError(
+          this.languageService.t('userDashboard.messages.error'),
+          this.languageService.t('userDashboard.messages.loadImageError')
+        );
+      }
+    });
   }
 
   /**
@@ -249,6 +351,15 @@ export class UserDashboardComponent implements OnInit {
       return;
     }
 
+    // Impede criar subpasta em pastas fixas do S3
+    if ((folder as any).isFixed) {
+      this.showError(
+        this.languageService.t('userDashboard.messages.error'),
+        'Não é possível criar subpastas em pastas fixas do sistema.'
+      );
+      return;
+    }
+
     const user = this.currentUser();
     if (!user) return;
 
@@ -308,6 +419,15 @@ export class UserDashboardComponent implements OnInit {
       return;
     }
 
+    // Impede edição de pastas fixas do S3
+    if ((folder as any).isFixed) {
+      this.showError(
+        this.languageService.t('userDashboard.messages.error'),
+        'Não é possível editar pastas fixas do sistema.'
+      );
+      return;
+    }
+
     // Abre o modal com o folder selecionado
     this.editingFolder.set(folder);
     this.newFolderName.set(folder.name);
@@ -362,6 +482,15 @@ export class UserDashboardComponent implements OnInit {
     // Ignora se for o nó raiz (null)
     if (!folder) {
       console.warn('Tentou deletar o nó raiz (null) - ignorado');
+      return;
+    }
+
+    // Impede exclusão de pastas fixas do S3
+    if ((folder as any).isFixed) {
+      this.showError(
+        this.languageService.t('userDashboard.messages.error'),
+        'Não é possível deletar pastas fixas do sistema.'
+      );
       return;
     }
 
@@ -670,6 +799,11 @@ export class UserDashboardComponent implements OnInit {
     const folderId = this.selectedFolderId();
     if (!folderId) return this.languageService.t('userDashboard.allPhotos');
 
+    // Verifica se é pasta fixa
+    const fixedFolder = this.FIXED_FOLDERS.find(f => f.id === folderId);
+    if (fixedFolder) return fixedFolder.name;
+
+    // Senão, busca nas pastas dinâmicas
     const folder = this.folders().find(f => f.id === folderId);
     return folder?.name || this.languageService.t('userDashboard.allPhotos');
   }
