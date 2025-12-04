@@ -14,7 +14,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { forkJoin, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 import { NavbarComponent } from '../../components/navbar/navbar.component';
 import { StorageService } from '../../services/storage.service';
 import { LanguageService } from '../../services/language.service';
@@ -77,6 +77,9 @@ export class UserDashboardComponent implements OnInit {
   isLoadingPhotos = signal(false);
   selectedFile = signal<{ name: string; path: string } | null>(null);
 
+  // Contadores de fotos
+  totalFixedPhotos = signal<number>(0);
+
   // Pastas fixas do S3
   readonly FIXED_FOLDERS = [
     {
@@ -119,6 +122,9 @@ export class UserDashboardComponent implements OnInit {
     }
     this.currentUser.set(user);
     this.loadData();
+
+    // Carrega contagem de fotos das pastas fixas
+    this.loadFixedPhotosCount();
   }
 
   /**
@@ -783,13 +789,57 @@ export class UserDashboardComponent implements OnInit {
   }
 
   /**
-   * Obtém total de fotos do usuário
+   * Carrega total de fotos das pastas fixas do S3
+   */
+  private loadFixedPhotosCount(): void {
+    const requests = this.FIXED_FOLDERS.map(folder =>
+      this.uploadService.listFixedFolderPhotos(folder.s3Folder).pipe(
+        map((response: { count: number }) => response.count),
+        catchError(error => {
+          console.error(`Erro ao contar fotos de ${folder.name}:`, error);
+          return of(0);
+        })
+      )
+    );
+
+    forkJoin(requests).subscribe({
+      next: (counts: number[]) => {
+        const total = counts.reduce((sum: number, count: number) => sum + count, 0);
+        this.totalFixedPhotos.set(total);
+        console.log('Total de fotos nas pastas fixas:', total);
+      },
+      error: (error) => {
+        console.error('Erro ao carregar contagem de fotos fixas:', error);
+        this.totalFixedPhotos.set(0);
+      }
+    });
+  }
+
+  /**
+   * Obtém total de fotos do usuário (dinâmicas + fixas)
    */
   getTotalPhotos(): number {
     const user = this.currentUser();
     if (!user) return 0;
 
-    return this.storageService.getUserPhotos(user.id).length;
+    // Fotos dinâmicas (localStorage)
+    const dynamicPhotos = this.storageService.getUserPhotos(user.id).length;
+
+    // Fotos fixas (S3)
+    const fixedPhotos = this.totalFixedPhotos();
+
+    return dynamicPhotos + fixedPhotos;
+  }
+
+  /**
+   * Obtém o nome traduzido do plano do usuário
+   */
+  getTranslatedPlan(): string {
+    const user = this.currentUser();
+    if (!user) return '';
+
+    const planKey = `plans.${user.plan.toLowerCase()}.name`;
+    return this.languageService.t(planKey);
   }
 
   /**

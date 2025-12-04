@@ -144,7 +144,7 @@
         </ng-template>
         <h3>{{ languageService.t('userDashboard.currentPlan') }}</h3>
         <p class="card-description">{{ languageService.t('userDashboard.currentPlanDesc') }}</p>
-        <div class="stat-value capitalize">{{ currentUser()?.plan }}</div>
+        <div class="stat-value capitalize">{{ getTranslatedPlan() }}</div>
         <p class="stat-detail">{{ getStorageLimitFormatted() }}</p>
       </p-card>
 
