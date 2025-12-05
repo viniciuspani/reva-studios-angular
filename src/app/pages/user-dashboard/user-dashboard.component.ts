@@ -614,13 +614,13 @@ export class UserDashboardComponent implements OnInit {
     }
 
     // Se é pasta fixa, não permite deletar
-    if (photo.folderId && this.isFixedFolder(photo.folderId)) {
-      this.showError(
-        'Exclusão não permitida',
-        'Não é possível excluir fotos das pastas fixas através do dashboard. Use o console S3.'
-      );
-      return;
-    }
+    // if (photo.folderId && this.isFixedFolder(photo.folderId)) {
+    //   this.showError(
+    //     'Exclusão não permitida',
+    //     'Não é possível excluir fotos das pastas fixas através do dashboard. Use o console S3.'
+    //   );
+    //   return;
+    // }
 
     // Se a foto tem s3Key, deleta do S3 também
     if (photo.s3Key) {
