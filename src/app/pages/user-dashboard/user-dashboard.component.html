@@ -285,6 +285,7 @@
                   *ngIf="!photo.isLoadingUrl && photo.displayUrl"
                   [src]="photo.displayUrl"
                   [alt]="photo.name"
+                  loading="lazy"
                   (error)="onImageError($event, photo)">
 
                 <!-- Erro ao carregar imagem -->

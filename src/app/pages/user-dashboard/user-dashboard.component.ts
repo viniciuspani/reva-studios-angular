@@ -13,8 +13,6 @@ import { MenuItem } from 'primeng/api';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { TooltipModule } from 'primeng/tooltip';
-import { forkJoin, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
 import { NavbarComponent } from '../../components/navbar/navbar.component';
 import { CustomTreeComponent, TreeNode } from '../../components/custom-tree/custom-tree.component';
 import { StorageService } from '../../services/storage.service';
@@ -23,6 +21,7 @@ import { UploadService, UploadResponse } from '../../services/upload.service';
 import { User } from '../../models/user.model';
 import { Photo } from '../../models/photo.model';
 import { Folder } from '../../models/folder.model';
+import { forkJoin } from 'rxjs';
 
 /**
  * Interface estendida para fotos com URL de visualização
@@ -76,6 +75,7 @@ export class UserDashboardComponent implements OnInit {
   isUploading = signal(false);
   isLoadingPhotos = signal(false);
   selectedFile = signal<{ name: string; path: string } | null>(null);
+  totalFixedPhotosCount = signal<number>(0);
 
   // Controle de modais
   showCreateDialog = false;
@@ -96,6 +96,7 @@ export class UserDashboardComponent implements OnInit {
     }
     this.currentUser.set(user);
     this.loadData();
+    this.loadFixedPhotosCount();
   }
 
   /**
@@ -196,58 +197,43 @@ export class UserDashboardComponent implements OnInit {
 
   /**
    * Carrega fotos de pasta dinâmica do localStorage
+   * OTIMIZADO: Usa proxy-image diretamente (sem chamadas HTTP extras)
    */
   private loadDynamicFolderPhotos(folderId: string | null): void {
     const user = this.currentUser();
     if (!user) return;
 
     const userPhotos = this.storageService.getUserPhotos(user.id, folderId);
-    
-    // Inicializa fotos sem URLs
+
+    // OTIMIZAÇÃO: Usa proxy-image diretamente (mesma lógica das pastas fixas)
     const photosWithUrl: PhotoWithUrl[] = userPhotos.map(photo => ({
       ...photo,
-      displayUrl: undefined,
-      isLoadingUrl: true
+      displayUrl: photo.s3Key ? this.uploadService.getProxyImageUrl(photo.s3Key) : undefined,
+      isLoadingUrl: false
     }));
-    
-    this.photos.set(photosWithUrl);
 
-    // Carrega URLs pré-assinadas para cada foto
-    if (userPhotos.length > 0) {
-      this.loadPhotoUrls(userPhotos);
-    } else {
-      this.isLoadingPhotos.set(false);
-    }
+    this.photos.set(photosWithUrl);
+    this.isLoadingPhotos.set(false);
   }
 
   /**
-   * Carrega URLs pré-assinadas para visualização das fotos
+   * Carrega contagem de fotos das pastas fixas do S3
    */
-  private loadPhotoUrls(photos: Photo[]): void {
-    const urlRequests = photos.map(photo => 
-      this.uploadService.getDownloadUrl(photo.s3Key || '').pipe(
-        catchError(error => {
-          console.error(`Erro ao carregar URL para ${photo.name}:`, error);
-          return of(null);
-        })
-      )
-    );
-
-    forkJoin(urlRequests).subscribe({
-      next: (urls) => {
-        const updatedPhotos = this.photos().map((photo, index) => ({
-          ...photo,
-          displayUrl: urls[index] || undefined,
-          isLoadingUrl: false
-        }));
-        
-        this.photos.set(updatedPhotos);
-        this.isLoadingPhotos.set(false);
+  private loadFixedPhotosCount(): void {
+    // Faz requisições paralelas para ambas as pastas fixas
+    forkJoin({
+      minhasFotos: this.uploadService.listFixedFolderPhotos('minhas-fotos'),
+      turmaIngles: this.uploadService.listFixedFolderPhotos('minha-melhor-turma-de-ingles')
+    }).subscribe({
+      next: (results) => {
+        const total = results.minhasFotos.count + results.turmaIngles.count;
+        this.totalFixedPhotosCount.set(total);
+        console.log(`Total de fotos nas pastas fixas: ${total}`);
       },
       error: (error) => {
-        console.error('Erro ao carregar URLs das fotos:', error);
-        this.isLoadingPhotos.set(false);
-        this.showError('Erro', 'Falha ao carregar algumas imagens');
+        console.error('Erro ao carregar contagem de fotos fixas:', error);
+        // Em caso de erro, mantém o contador em 0
+        this.totalFixedPhotosCount.set(0);
       }
     });
   }
@@ -571,6 +557,11 @@ export class UserDashboardComponent implements OnInit {
         // Recarrega fotos
         this.loadPhotos();
 
+        // Se foi upload para pasta fixa, atualiza contador
+        if (isUploadingToFixedFolder) {
+          this.loadFixedPhotosCount();
+        }
+
         this.isUploading.set(false);
         input.value = '';
       },
@@ -768,13 +759,25 @@ export class UserDashboardComponent implements OnInit {
   }
 
   /**
-   * Obtém total de fotos do usuário
+   * Obtém total de fotos do usuário (localStorage + pastas fixas S3)
    */
   getTotalPhotos(): number {
     const user = this.currentUser();
     if (!user) return 0;
 
-    return this.storageService.getUserPhotos(user.id).length;
+    // Conta apenas fotos das pastas DINÂMICAS (localStorage), excluindo as fixas
+    const allPhotos = this.storageService.getUserPhotos(user.id);
+    const dynamicFoldersPhotos = allPhotos.filter(photo => {
+      // Exclui fotos que estão nas pastas fixas do localStorage
+      return !photo.folderId ||
+             (photo.folderId !== 'fixed-minhas-fotos' &&
+              photo.folderId !== 'fixed-minha-melhor-turma-de-ingles');
+    }).length;
+
+    // Soma fotos dinâmicas + fotos das pastas fixas S3
+    const fixedFoldersPhotos = this.totalFixedPhotosCount();
+
+    return dynamicFoldersPhotos + fixedFoldersPhotos;
   }
 
   /**
