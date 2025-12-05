@@ -78,7 +78,7 @@ export class UploadService {
    */
   uploadFile(file: File): Observable<UploadResponse> {
     console.log('Iniciando upload:', file.name);
-    
+
     return this.http.post<PresignedUrlResponse>(
       `${this.apiUrl}/generate-upload-url`,
       {
@@ -88,7 +88,8 @@ export class UploadService {
     ).pipe(
       switchMap(response => {
         console.log('URL pré-assinada recebida:', response);
-        
+        console.log('Upload URL completa:', response.uploadUrl);
+
         return from(
           fetch(response.uploadUrl, {
             method: 'PUT',
@@ -97,22 +98,32 @@ export class UploadService {
               'Content-Type': file.type
             }
           }).then(uploadResponse => {
+            console.log('Status da resposta S3:', uploadResponse.status, uploadResponse.statusText);
+
             if (!uploadResponse.ok) {
-              throw new Error(`Upload failed: ${uploadResponse.statusText}`);
+              throw new Error(`Upload failed: ${uploadResponse.status} ${uploadResponse.statusText}`);
             }
             console.log('Upload concluído com sucesso');
-            
+
             return {
               success: true,
               fileKey: response.fileKey,
               fileUrl: this.getProxyImageUrl(response.fileKey),
               bucketName: response.bucketName
             };
+          }).catch(fetchError => {
+            console.error('Erro detalhado no fetch:', fetchError);
+            console.error('Tipo do erro:', fetchError.constructor.name);
+            console.error('Mensagem:', fetchError.message);
+            throw fetchError;
           })
         );
       }),
       catchError(error => {
-        console.error('Erro no upload:', error);
+        console.error('Erro no upload (catchError):', error);
+        console.error('Status do erro HTTP:', error.status);
+        console.error('Mensagem do erro:', error.message);
+        console.error('Erro completo:', error);
         return throwError(() => error);
       })
     );
@@ -167,6 +178,8 @@ export class UploadService {
             } as UploadResponse);
           }
 
+          console.log(`Fazendo upload de ${file.name} para:`, result.uploadUrl);
+
           return fetch(result.uploadUrl, {
             method: 'PUT',
             body: file,
@@ -174,8 +187,10 @@ export class UploadService {
               'Content-Type': file.type
             }
           }).then(uploadResponse => {
+            console.log(`Status resposta S3 para ${file.name}:`, uploadResponse.status, uploadResponse.statusText);
+
             if (!uploadResponse.ok) {
-              throw new Error(`Upload failed for ${file.name}: ${uploadResponse.statusText}`);
+              throw new Error(`Upload failed for ${file.name}: ${uploadResponse.status} ${uploadResponse.statusText}`);
             }
 
             console.log(`Upload concluído: ${file.name}`);
@@ -189,6 +204,8 @@ export class UploadService {
             } as UploadResponse;
           }).catch(error => {
             console.error(`Erro ao fazer upload de ${file.name}:`, error);
+            console.error(`Tipo do erro:`, error.constructor.name);
+            console.error(`Mensagem:`, error.message);
             return {
               success: false,
               fileKey: result.fileKey || '',

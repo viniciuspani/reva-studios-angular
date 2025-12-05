@@ -286,6 +286,7 @@
                   [src]="photo.displayUrl"
                   [alt]="photo.name"
                   loading="lazy"
+                  crossorigin="anonymous"
                   (error)="onImageError($event, photo)">
 
                 <!-- Erro ao carregar imagem -->
