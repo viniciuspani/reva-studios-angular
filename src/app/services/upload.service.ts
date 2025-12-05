@@ -8,12 +8,38 @@ export interface UploadResponse {
   fileKey: string;
   fileUrl: string;
   bucketName?: string;
+  folder?: string;
 }
 
 export interface PresignedUrlResponse {
   uploadUrl: string;
   fileKey: string;
   bucketName: string;
+  folder?: string;
+}
+
+export interface MultipleUploadRequest {
+  files: Array<{
+    fileName: string;
+    fileType: string;
+  }>;
+  folder?: string;
+}
+
+export interface MultipleUploadResponse {
+  success: boolean;
+  total: number;
+  successful: number;
+  failed: number;
+  results: Array<{
+    success: boolean;
+    fileName: string;
+    uploadUrl?: string;
+    fileKey?: string;
+    bucketName?: string;
+    folder?: string;
+    error?: string;
+  }>;
 }
 
 export interface DeleteResponse {
@@ -44,6 +70,8 @@ export class UploadService {
   private apiUrl = 'https://hleasylvvb.execute-api.us-east-2.amazonaws.com/prod';
   
   constructor(private http: HttpClient) { }
+
+  // ========== MÉTODOS DE UPLOAD ==========
 
   /**
    * Faz upload de um arquivo para o S3
@@ -91,6 +119,97 @@ export class UploadService {
   }
 
   /**
+   * Faz upload de múltiplos arquivos de uma vez (OTIMIZADO)
+   */
+  uploadMultipleFilesOptimized(files: File[], folder?: string): Observable<UploadResponse[]> {
+    if (files.length === 0) {
+      return of([]);
+    }
+
+    console.log(`Iniciando upload múltiplo de ${files.length} arquivos${folder ? ' para pasta: ' + folder : ''}`);
+
+    // Monta array de metadados dos arquivos
+    const filesMetadata = files.map(file => ({
+      fileName: file.name,
+      fileType: file.type
+    }));
+
+    const requestBody: MultipleUploadRequest = {
+      files: filesMetadata,
+      ...(folder && { folder })
+    };
+
+    // Faz UMA ÚNICA chamada para gerar todas as URLs pré-assinadas
+    return this.http.post<MultipleUploadResponse>(
+      `${this.apiUrl}/generate-upload-url`,
+      requestBody
+    ).pipe(
+      switchMap(response => {
+        console.log(`URLs geradas: ${response.successful} sucesso, ${response.failed} falhas`);
+
+        // Filtra apenas os resultados bem-sucedidos
+        const successfulResults = response.results.filter(r => r.success);
+
+        if (successfulResults.length === 0) {
+          throw new Error('Nenhuma URL pré-assinada foi gerada com sucesso');
+        }
+
+        // Faz upload de todos os arquivos em paralelo
+        const uploadPromises = successfulResults.map((result) => {
+          const file = files.find(f => f.name === result.fileName);
+          
+          if (!file || !result.uploadUrl) {
+            return Promise.resolve({
+              success: false,
+              fileKey: result.fileKey || '',
+              fileUrl: '',
+              error: 'File or URL not found'
+            } as UploadResponse);
+          }
+
+          return fetch(result.uploadUrl, {
+            method: 'PUT',
+            body: file,
+            headers: {
+              'Content-Type': file.type
+            }
+          }).then(uploadResponse => {
+            if (!uploadResponse.ok) {
+              throw new Error(`Upload failed for ${file.name}: ${uploadResponse.statusText}`);
+            }
+
+            console.log(`Upload concluído: ${file.name}`);
+
+            return {
+              success: true,
+              fileKey: result.fileKey!,
+              fileUrl: this.getProxyImageUrl(result.fileKey!),
+              bucketName: result.bucketName,
+              folder: result.folder
+            } as UploadResponse;
+          }).catch(error => {
+            console.error(`Erro ao fazer upload de ${file.name}:`, error);
+            return {
+              success: false,
+              fileKey: result.fileKey || '',
+              fileUrl: '',
+              error: error.message
+            } as UploadResponse;
+          });
+        });
+
+        // Aguarda todos os uploads completarem
+        return from(Promise.all(uploadPromises));
+      }),
+      catchError(error => {
+        console.error('Erro no upload múltiplo:', error);
+        const errorMessage = error.error?.message || error.message || 'Erro ao fazer upload múltiplo';
+        return throwError(() => new Error(errorMessage));
+      })
+    );
+  }
+
+  /**
    * Deleta um arquivo do S3
    */
   deleteFile(fileKey: string): Observable<DeleteResponse> {
@@ -131,15 +250,22 @@ export class UploadService {
   }
 
   /**
-   * Faz upload de múltiplos arquivos
+   * Faz upload de múltiplos arquivos (usa método otimizado ou individual)
    */
-  uploadMultipleFiles(files: File[]): Observable<UploadResponse[]> {
+  uploadMultipleFiles(files: File[], folder?: string): Observable<UploadResponse[]> {
     if (files.length === 0) {
       return of([]);
     }
-    
-    const uploads = files.map(file => this.uploadAndGetUrl(file));
-    return forkJoin(uploads);
+
+    // Se for mais de 1 arquivo, usa o método otimizado
+    if (files.length > 1) {
+      return this.uploadMultipleFilesOptimized(files, folder);
+    }
+
+    // Se for apenas 1 arquivo, usa o método individual
+    return this.uploadFile(files[0]).pipe(
+      map(response => [response])
+    );
   }
 
   // ========== MÉTODOS PARA PASTAS FIXAS DO S3 ==========
@@ -181,7 +307,7 @@ export class UploadService {
    * Verifica se uma pasta é uma pasta fixa do S3
    */
   isFixedFolder(folderId: string): boolean {
-    return folderId === 'fixed-minhas-fotos' || folderId === 'fixed-turma-ingles';
+    return folderId === 'fixed-minhas-fotos' || folderId === 'fixed-minha-melhor-turma-de-ingles';
   }
 
   /**
@@ -191,7 +317,7 @@ export class UploadService {
     switch (folderId) {
       case 'fixed-minhas-fotos':
         return 'minhas-fotos';
-      case 'fixed-turma-ingles':
+      case 'fixed-minha-melhor-turma-de-ingles':
         return 'minha-melhor-turma-de-ingles';
       default:
         return null;

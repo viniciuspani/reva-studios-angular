@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal, ViewChild, ElementRef, ViewEncapsulation, computed } from '@angular/core';
+import { Component, inject, OnInit, signal, ViewChild, ElementRef, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -10,19 +10,19 @@ import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { MenuModule } from 'primeng/menu';
 import { MenuItem } from 'primeng/api';
-import { TooltipModule } from 'primeng/tooltip';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
+import { TooltipModule } from 'primeng/tooltip';
 import { forkJoin, of } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { catchError } from 'rxjs/operators';
 import { NavbarComponent } from '../../components/navbar/navbar.component';
+import { CustomTreeComponent, TreeNode } from '../../components/custom-tree/custom-tree.component';
 import { StorageService } from '../../services/storage.service';
 import { LanguageService } from '../../services/language.service';
 import { UploadService, UploadResponse } from '../../services/upload.service';
 import { User } from '../../models/user.model';
 import { Photo } from '../../models/photo.model';
 import { Folder } from '../../models/folder.model';
-import { CustomTreeComponent, TreeNode } from '../../components/custom-tree/custom-tree.component';
 
 /**
  * Interface estendida para fotos com URL de visualização
@@ -48,9 +48,9 @@ interface PhotoWithUrl extends Photo {
     FileUploadModule,
     ToastModule,
     MenuModule,
-    TooltipModule,
     DialogModule,
     InputTextModule,
+    TooltipModule,
     NavbarComponent,
     CustomTreeComponent
   ],
@@ -77,41 +77,15 @@ export class UserDashboardComponent implements OnInit {
   isLoadingPhotos = signal(false);
   selectedFile = signal<{ name: string; path: string } | null>(null);
 
-  // Contadores de fotos
-  totalFixedPhotos = signal<number>(0);
-
-  // Pastas fixas do S3
-  readonly FIXED_FOLDERS = [
-    {
-      id: 'fixed-minhas-fotos',
-      name: 'Minhas Fotos',
-      s3Folder: 'minhas-fotos',
-      icon: 'pi-images'
-    },
-    {
-      id: 'fixed-turma-ingles',
-      name: 'Minha Melhor Turma de Inglês',
-      s3Folder: 'minha-melhor-turma-de-ingles',
-      icon: 'pi-book'
-    }
-  ] as const;
-
-  // Signals para modal de edição
-  showEditDialog = signal(false);
-  editingFolder = signal<Folder | null>(null);
-  newFolderName = signal('');
-
-  // Signals para modal de criar pasta
-  showCreateDialog = signal(false);
+  // Controle de modais
+  showCreateDialog = false;
+  showEditDialog = false;
+  showDeleteDialog = false;
+  createFolderName = '';
+  newFolderName = '';
   parentFolderForCreate = signal<Folder | null>(null);
-  createFolderName = signal('');
-
-  // Signals para modal de deletar pasta
-  showDeleteDialog = signal(false);
+  folderToEdit = signal<Folder | null>(null);
   folderToDelete = signal<Folder | null>(null);
-
-  // Computed signal para tree nodes
-  treeNodes = computed(() => this.convertToTreeNodes(this.folders()));
 
   ngOnInit(): void {
     // Verifica autenticação
@@ -122,59 +96,6 @@ export class UserDashboardComponent implements OnInit {
     }
     this.currentUser.set(user);
     this.loadData();
-
-    // Carrega contagem de fotos das pastas fixas
-    this.loadFixedPhotosCount();
-  }
-
-  /**
-   * Converte Folders para TreeNodes
-   */
-  private convertToTreeNodes(folders: Folder[], parentId: string | null = null): TreeNode[] {
-    const filtered = folders.filter(f => f.parentId === parentId);
-    
-    return filtered.map(folder => ({
-      id: folder.id,
-      label: folder.name,
-      data: folder,
-      children: this.convertToTreeNodes(folders, folder.id),
-      expanded: true,
-      selected: folder.id === this.selectedFolderId()
-    }));
-  }
-
-  /**
-   * Constrói tree nodes com nó raiz "Todas as fotos"
-   */
-  getRootTreeNodes(): TreeNode[] {
-    // Cria nodes para pastas fixas do S3
-    const fixedFolderNodes: TreeNode[] = this.FIXED_FOLDERS.map(folder => ({
-      id: folder.id,
-      label: folder.name,
-      data: {
-        id: folder.id,
-        name: folder.name,
-        isFixed: true,
-        s3Folder: folder.s3Folder
-      },
-      children: [],
-      expanded: false,
-      selected: this.selectedFolderId() === folder.id
-    }));
-
-    // Combina pastas fixas com pastas dinâmicas do usuário
-    const allChildren = [...fixedFolderNodes, ...this.treeNodes()];
-
-    return [
-      {
-        id: 'root',
-        label: this.languageService.t('userDashboard.allPhotos'),
-        data: null,
-        children: allChildren,
-        expanded: true,
-        selected: this.selectedFolderId() === null
-      }
-    ];
   }
 
   /**
@@ -190,83 +111,60 @@ export class UserDashboardComponent implements OnInit {
   }
 
   /**
-   * Carrega fotos da pasta selecionada e suas URLs de visualização
+   * Carrega fotos da pasta selecionada
+   * Detecta se é pasta fixa do S3 ou pasta dinâmica do localStorage
    */
   loadPhotos(): void {
     const user = this.currentUser();
     if (!user) return;
 
     this.isLoadingPhotos.set(true);
-    const folderId = this.selectedFolderId();
+    const selectedId = this.selectedFolderId();
 
     // Verifica se é uma pasta fixa do S3
-    if (folderId && this.isFixedFolder(folderId)) {
-      this.loadFixedFolderPhotos(folderId);
-      return;
-    }
-
-    // Carrega fotos das pastas dinâmicas (comportamento original)
-    const userPhotos = this.storageService.getUserPhotos(user.id, folderId);
-
-    // Inicializa fotos sem URLs
-    const photosWithUrl: PhotoWithUrl[] = userPhotos.map(photo => ({
-      ...photo,
-      displayUrl: undefined,
-      isLoadingUrl: true
-    }));
-
-    this.photos.set(photosWithUrl);
-
-    // Carrega URLs pré-assinadas para cada foto
-    if (userPhotos.length > 0) {
-      this.loadPhotoUrls(userPhotos);
+    if (selectedId && this.isFixedFolder(selectedId)) {
+      this.loadFixedFolderPhotos(selectedId);
     } else {
-      this.isLoadingPhotos.set(false);
+      // Pasta dinâmica ou raiz - carrega do localStorage
+      this.loadDynamicFolderPhotos(selectedId);
     }
   }
 
   /**
-   * Verifica se a pasta é uma pasta fixa do S3
+   * Verifica se o ID é de uma pasta fixa
    */
-  private isFixedFolder(folderId: string): boolean {
-    return this.FIXED_FOLDERS.some(f => f.id === folderId);
+  private isFixedFolder(id: string): boolean {
+    return id === 'fixed-minhas-fotos' || id === 'fixed-minha-melhor-turma-de-ingles';
   }
 
   /**
-   * Obtém o nome da pasta no S3 baseado no ID
-   */
-  private getFixedFolderName(folderId: string): string | null {
-    const folder = this.FIXED_FOLDERS.find(f => f.id === folderId);
-    return folder?.s3Folder || null;
-  }
-
-  /**
-   * Carrega fotos de uma pasta fixa do S3
+   * Carrega fotos de pasta fixa do S3
    */
   private loadFixedFolderPhotos(folderId: string): void {
-    const s3FolderName = this.getFixedFolderName(folderId);
-    if (!s3FolderName) {
+    const folderName = this.getFixedFolderName(folderId);
+    
+    if (!folderName) {
       this.isLoadingPhotos.set(false);
       return;
     }
 
-    this.uploadService.listFixedFolderPhotos(s3FolderName).subscribe({
+    this.uploadService.listFixedFolderPhotos(folderName).subscribe({
       next: (response) => {
         console.log('Fotos da pasta fixa carregadas:', response);
-
-        // Converte SimplePhoto para PhotoWithUrl
-        const photosWithUrl: PhotoWithUrl[] = response.photos.map(photo => ({
-          id: crypto.randomUUID(),
-          userId: this.currentUser()?.id || '',
+        
+        // Converte para PhotoWithUrl
+        const photosWithUrl: PhotoWithUrl[] = response.photos.map(s3Photo => ({
+          id: s3Photo.key,
+          userId: this.currentUser()!.id,
           folderId: folderId,
-          name: photo.name,
-          size: photo.size,
+          name: s3Photo.name,
+          size: s3Photo.size,
           type: 'image/jpeg',
-          uploadedAt: photo.lastModified,
-          dataUrl: this.uploadService.getProxyImageUrl(photo.key),
-          displayUrl: this.uploadService.getProxyImageUrl(photo.key),
-          s3Key: photo.key,
+          uploadedAt: s3Photo.lastModified,
+          dataUrl: '',
+          s3Key: s3Photo.key,
           bucketName: 'reva-studios-uploads',
+          displayUrl: this.uploadService.getProxyImageUrl(s3Photo.key),
           isLoadingUrl: false
         }));
 
@@ -275,14 +173,51 @@ export class UserDashboardComponent implements OnInit {
       },
       error: (error) => {
         console.error('Erro ao carregar fotos da pasta fixa:', error);
+        this.showError('Erro', 'Falha ao carregar fotos da pasta fixa');
         this.photos.set([]);
         this.isLoadingPhotos.set(false);
-        this.showError(
-          this.languageService.t('userDashboard.messages.error'),
-          this.languageService.t('userDashboard.messages.loadImageError')
-        );
       }
     });
+  }
+
+  /**
+   * Obtém o nome da pasta no S3 baseado no ID
+   */
+  private getFixedFolderName(folderId: string): string | null {
+    switch (folderId) {
+      case 'fixed-minhas-fotos':
+        return 'minhas-fotos';
+      case 'fixed-minha-melhor-turma-de-ingles':
+        return 'minha-melhor-turma-de-ingles';
+      default:
+        return null;
+    }
+  }
+
+  /**
+   * Carrega fotos de pasta dinâmica do localStorage
+   */
+  private loadDynamicFolderPhotos(folderId: string | null): void {
+    const user = this.currentUser();
+    if (!user) return;
+
+    const userPhotos = this.storageService.getUserPhotos(user.id, folderId);
+    
+    // Inicializa fotos sem URLs
+    const photosWithUrl: PhotoWithUrl[] = userPhotos.map(photo => ({
+      ...photo,
+      displayUrl: undefined,
+      isLoadingUrl: true
+    }));
+    
+    this.photos.set(photosWithUrl);
+
+    // Carrega URLs pré-assinadas para cada foto
+    if (userPhotos.length > 0) {
+      this.loadPhotoUrls(userPhotos);
+    } else {
+      this.isLoadingPhotos.set(false);
+    }
   }
 
   /**
@@ -312,200 +247,193 @@ export class UserDashboardComponent implements OnInit {
       error: (error) => {
         console.error('Erro ao carregar URLs das fotos:', error);
         this.isLoadingPhotos.set(false);
-        this.showError(
-          this.languageService.t('userDashboard.messages.error'),
-          this.languageService.t('userDashboard.messages.loadImageError')
-        );
+        this.showError('Erro', 'Falha ao carregar algumas imagens');
       }
     });
   }
 
   /**
-   * Seleciona uma pasta no tree
+   * Constrói nós raiz da árvore incluindo pastas fixas
    */
-  onFolderSelect(event: { node: TreeNode, data: any }): void {
-    if (event.data) {
-      this.selectedFolderId.set(event.data.id);
-    } else {
-      this.selectedFolderId.set(null);
-    }
+  getRootTreeNodes(): TreeNode[] {
+    const user = this.currentUser();
+    if (!user) return [];
+
+    const nodes: TreeNode[] = [];
+
+    // Nó raiz "Todas as fotos"
+    nodes.push({
+      id: 'root',
+      label: this.languageService.t('userDashboard.allPhotos'),
+      data: null,
+      children: this.buildDynamicFolderNodes(null),
+      expanded: true
+    });
+
+    // Pasta fixa: Minhas Fotos
+    nodes.push({
+      id: 'fixed-minhas-fotos',
+      label: 'Minhas Fotos',
+      data: 'fixed-minhas-fotos',
+      children: [],
+      expanded: false
+    });
+
+    // Pasta fixa: Minha Melhor Turma de Inglês
+    nodes.push({
+      id: 'fixed-minha-melhor-turma-de-ingles',
+      label: 'Minha Melhor Turma de Inglês',
+      data: 'fixed-minha-melhor-turma-de-ingles',
+      children: [],
+      expanded: false
+    });
+
+    return nodes;
+  }
+
+  /**
+   * Constrói nós de pastas dinâmicas recursivamente
+   */
+  private buildDynamicFolderNodes(parentId: string | null): TreeNode[] {
+    return this.folders()
+      .filter(f => f.parentId === parentId)
+      .map(folder => ({
+        id: folder.id,
+        label: folder.name,
+        data: folder.id,
+        children: this.buildDynamicFolderNodes(folder.id),
+        expanded: false
+      }));
+  }
+
+  /**
+   * Seleciona uma pasta na árvore
+   */
+  onFolderSelect(event: any): void {
+    const nodeData = event.data;
+    console.log('Pasta selecionada (data):', nodeData);
+    
+    this.selectedFolderId.set(nodeData);
     this.loadPhotos();
   }
 
   /**
-   * Abre modal para criar nova pasta raiz
+   * Cria nova pasta
    */
   createFolder(): void {
-    const user = this.currentUser();
-    if (!user) return;
-
     this.parentFolderForCreate.set(null);
-    this.createFolderName.set('');
-    this.showCreateDialog.set(true);
+    this.createFolderName = '';
+    this.showCreateDialog = true;
   }
 
   /**
-   * Abre modal para criar subpasta dentro de uma pasta existente
-   * Recebe o objeto Folder diretamente do custom-tree
+   * Cria subpasta dentro de uma pasta existente
    */
-  createSubfolder(folder: Folder | null): void {
-    console.log('createSubfolder chamado com:', folder);
-
-    // Ignora se for o nó raiz (null)
-    if (!folder) {
-      console.warn('Tentou criar subpasta no nó raiz (null) - ignorado');
+  createSubfolder(folderData: any): void {
+    // Não permite criar subpastas em pastas fixas
+    if (typeof folderData === 'string' && folderData.startsWith('fixed-')) {
+      this.showError('Não permitido', 'Não é possível criar subpastas dentro de pastas fixas');
       return;
     }
 
-    // Impede criar subpasta em pastas fixas do S3
-    if ((folder as any).isFixed) {
-      this.showError(
-        this.languageService.t('userDashboard.messages.error'),
-        'Não é possível criar subpastas em pastas fixas do sistema.'
-      );
-      return;
-    }
-
-    const user = this.currentUser();
-    if (!user) return;
+    const folder = this.folders().find(f => f.id === folderData);
+    if (!folder) return;
 
     this.parentFolderForCreate.set(folder);
-    this.createFolderName.set('');
-    this.showCreateDialog.set(true);
+    this.createFolderName = '';
+    this.showCreateDialog = true;
   }
 
   /**
-   * Salva a nova pasta/subpasta
+   * Salva a criação da pasta
    */
   saveCreateFolder(): void {
     const user = this.currentUser();
-    if (!user) return;
+    if (!user || !this.createFolderName.trim()) return;
 
-    const folderName = this.createFolderName().trim();
-    const parentFolder = this.parentFolderForCreate();
-
-    if (!folderName) {
-      this.showError(
-        this.languageService.t('userDashboard.messages.error'),
-        this.languageService.t('userDashboard.messages.folderNameEmpty')
-      );
-      return;
-    }
-
-    this.storageService.createFolder(user.id, folderName, parentFolder?.id || null);
+    const parentId = this.parentFolderForCreate()?.id || null;
+    
+    this.storageService.createFolder(user.id, this.createFolderName.trim(), parentId);
     this.loadData();
-
-    const message = parentFolder
-      ? this.languageService.t('userDashboard.messages.subfolderCreatedIn').replace('{name}', folderName).replace('{parent}', parentFolder.name)
-      : this.languageService.t('userDashboard.messages.folderCreatedSuccess').replace('{name}', folderName);
-
-    this.showSuccess(this.languageService.t('userDashboard.messages.folderCreated'), message);
+    
+    const folderType = parentId ? 'Subpasta' : 'Pasta';
+    this.showSuccess(`${folderType} criada`, `${folderType} "${this.createFolderName}" criada com sucesso`);
+    
     this.closeCreateDialog();
   }
 
   /**
-   * Fecha o modal de criar pasta
+   * Fecha modal de criar pasta
    */
   closeCreateDialog(): void {
-    this.showCreateDialog.set(false);
+    this.showCreateDialog = false;
+    this.createFolderName = '';
     this.parentFolderForCreate.set(null);
-    this.createFolderName.set('');
   }
 
   /**
-   * Abre modal para editar nome de uma pasta
-   * Recebe o objeto Folder diretamente do custom-tree
+   * Edita nome de uma pasta
    */
-  editFolder(folder: Folder | null): void {
-    console.log('editFolder chamado com:', folder);
-
-    // Se for null (nó raiz), ignora
-    if (!folder) {
-      console.warn('Tentou editar o nó raiz (null) - ignorado');
+  editFolder(folderData: any): void {
+    // Não permite editar pastas fixas
+    if (typeof folderData === 'string' && folderData.startsWith('fixed-')) {
+      this.showError('Não permitido', 'Não é possível editar pastas fixas');
       return;
     }
 
-    // Impede edição de pastas fixas do S3
-    if ((folder as any).isFixed) {
-      this.showError(
-        this.languageService.t('userDashboard.messages.error'),
-        'Não é possível editar pastas fixas do sistema.'
-      );
-      return;
-    }
+    const folder = this.folders().find(f => f.id === folderData);
+    if (!folder) return;
 
-    // Abre o modal com o folder selecionado
-    this.editingFolder.set(folder);
-    this.newFolderName.set(folder.name);
-    this.showEditDialog.set(true);
+    this.folderToEdit.set(folder);
+    this.newFolderName = folder.name;
+    this.showEditDialog = true;
   }
 
   /**
-   * Salva a edição do nome da pasta
+   * Salva a edição da pasta
    */
   saveEditFolder(): void {
-    const folder = this.editingFolder();
-    const newName = this.newFolderName().trim();
-
-    if (!folder || !newName) {
-      this.showError(
-        this.languageService.t('userDashboard.messages.error'),
-        this.languageService.t('userDashboard.messages.folderNameEmpty')
-      );
-      return;
-    }
-
-    if (newName === folder.name) {
+    const folder = this.folderToEdit();
+    if (!folder || !this.newFolderName.trim() || this.newFolderName.trim() === folder.name) {
       this.closeEditDialog();
       return;
     }
 
-    this.storageService.renameFolder(folder.id, newName);
+    this.storageService.renameFolder(folder.id, this.newFolderName.trim());
     this.loadData();
-    this.showSuccess(
-      this.languageService.t('userDashboard.messages.folderRenamed'),
-      this.languageService.t('userDashboard.messages.folderRenamedTo').replace('{name}', newName)
-    );
+    this.showSuccess('Pasta renomeada', `Pasta renomeada para "${this.newFolderName}"`);
+    
     this.closeEditDialog();
   }
 
   /**
-   * Fecha o modal de edição
+   * Fecha modal de editar pasta
    */
   closeEditDialog(): void {
-    this.showEditDialog.set(false);
-    this.editingFolder.set(null);
-    this.newFolderName.set('');
+    this.showEditDialog = false;
+    this.newFolderName = '';
+    this.folderToEdit.set(null);
   }
 
   /**
-   * Abre modal para confirmar exclusão de pasta
-   * Recebe o objeto Folder diretamente do custom-tree
+   * Exclui uma pasta
    */
-  deleteFolder(folder: Folder | null): void {
-    console.log('deleteFolder chamado com:', folder);
-
-    // Ignora se for o nó raiz (null)
-    if (!folder) {
-      console.warn('Tentou deletar o nó raiz (null) - ignorado');
+  deleteFolder(folderData: any): void {
+    // Não permite deletar pastas fixas
+    if (typeof folderData === 'string' && folderData.startsWith('fixed-')) {
+      this.showError('Não permitido', 'Não é possível deletar pastas fixas');
       return;
     }
 
-    // Impede exclusão de pastas fixas do S3
-    if ((folder as any).isFixed) {
-      this.showError(
-        this.languageService.t('userDashboard.messages.error'),
-        'Não é possível deletar pastas fixas do sistema.'
-      );
-      return;
-    }
+    const folder = this.folders().find(f => f.id === folderData);
+    if (!folder) return;
 
     this.folderToDelete.set(folder);
-    this.showDeleteDialog.set(true);
+    this.showDeleteDialog = true;
   }
 
   /**
-   * Confirma e executa a exclusão da pasta
+   * Confirma a exclusão da pasta
    */
   confirmDeleteFolder(): void {
     const folder = this.folderToDelete();
@@ -514,106 +442,145 @@ export class UserDashboardComponent implements OnInit {
     this.storageService.deleteFolder(folder.id);
     this.loadData();
 
+    // Se a pasta excluída estava selecionada, volta para "Todas as fotos"
     if (this.selectedFolderId() === folder.id) {
       this.selectedFolderId.set(null);
     }
 
-    this.showSuccess(
-      this.languageService.t('userDashboard.messages.folderDeleted'),
-      this.languageService.t('userDashboard.messages.folderDeletedSuccess').replace('{name}', folder.name)
-    );
+    this.showSuccess('Pasta excluída', `Pasta "${folder.name}" excluída com sucesso`);
     this.closeDeleteDialog();
   }
 
   /**
-   * Fecha o modal de deletar pasta
+   * Fecha modal de deletar pasta
    */
   closeDeleteDialog(): void {
-    this.showDeleteDialog.set(false);
+    this.showDeleteDialog = false;
     this.folderToDelete.set(null);
   }
 
   /**
-   * Manipula seleção de arquivos
+   * Manipula seleção de arquivos (ATUALIZADO PARA UPLOAD MÚLTIPLO)
    */
   async onFileSelect(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
-    if (!input.files || input.files.length === 0) return;
+    const files = input.files;
+    if (!files || files.length === 0 || !this.currentUser()) return;
 
-    const user = this.currentUser();
-    if (!user) return;
+    const selectedId = this.selectedFolderId();
 
     this.isUploading.set(true);
+    const user = this.currentUser()!;
 
-    for (const file of Array.from(input.files)) {
-      const filePath = (file as any).webkitRelativePath || file.name;
-      this.selectedFile.set({ name: file.name, path: filePath });
+    // Converte FileList para Array
+    const filesArray = Array.from(files);
 
-      const currentStorage = user.storageUsed;
-      const storageLimit = this.storageService.getStorageLimit(user.plan);
-
-      if (storageLimit !== Infinity && currentStorage + file.size > storageLimit) {
-        this.showError(
-          this.languageService.t('userDashboard.messages.storageLimitExceeded'),
-          this.languageService.t('userDashboard.messages.storageLimitExceededDesc')
-        );
-        continue;
+    // Valida todos os arquivos antes
+    for (const file of filesArray) {
+      if (!file.type.startsWith('image/')) {
+        this.showError('Erro no upload', `${file.name} não é uma imagem válida`);
+        this.isUploading.set(false);
+        input.value = '';
+        return;
       }
 
-      try {
-        this.uploadService.uploadAndGetUrl(file).subscribe({
-          next: (result: UploadResponse) => {
-            console.log('Upload S3 bem-sucedido:', result);
-
-            const photo: Photo = {
-              id: crypto.randomUUID(),
-              userId: user.id,
-              folderId: this.selectedFolderId(),
-              name: file.name,
-              size: file.size,
-              type: file.type,
-              uploadedAt: new Date().toISOString(),
-              dataUrl: result.fileUrl,
-              s3Key: result.fileKey,
-              bucketName: result.bucketName
-            };
-
-            const photos = this.storageService.getPhotos();
-            photos.push(photo);
-            this.storageService.savePhotos(photos);
-
-            this.storageService.updateUser(user.id, {
-              storageUsed: user.storageUsed + file.size
-            });
-
-            this.showSuccess(
-              this.languageService.t('userDashboard.messages.uploadSuccess'),
-              this.languageService.t('userDashboard.messages.uploadSuccessDesc').replace('{name}', file.name)
-            );
-
-            const updatedUser = this.storageService.getCurrentUser();
-            if (updatedUser) {
-              this.currentUser.set(updatedUser);
-            }
-
-            this.loadPhotos();
-          },
-          error: (error) => {
-            console.error('Erro no upload S3:', error);
-            this.showError(
-              this.languageService.t('userDashboard.messages.uploadError'),
-              this.languageService.t('userDashboard.messages.uploadErrorDesc').replace('{name}', file.name)
-            );
-          }
-        });
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : this.languageService.t('userDashboard.messages.uploadError');
-        this.showError(this.languageService.t('userDashboard.messages.uploadError'), errorMessage);
+      const storageLimit = this.storageService.getStorageLimit(user.plan);
+      if (user.storageUsed + file.size > storageLimit) {
+        this.showError('Limite excedido', 'Você atingiu o limite de armazenamento do seu plano');
+        this.isUploading.set(false);
+        input.value = '';
+        return;
       }
     }
 
-    this.isUploading.set(false);
-    input.value = '';
+    console.log(`Fazendo upload de ${filesArray.length} arquivo(s)`);
+
+    // Detecta se é upload para pasta fixa
+    const isUploadingToFixedFolder = selectedId ? this.isFixedFolder(selectedId) : false;
+    const s3FolderName = isUploadingToFixedFolder && selectedId ? this.getFixedFolderName(selectedId) ?? undefined : undefined;
+
+    // Upload múltiplo otimizado
+    this.uploadService.uploadMultipleFiles(filesArray, s3FolderName).subscribe({
+      next: (results: UploadResponse[]) => {
+        console.log('Upload múltiplo concluído:', results);
+
+        // Conta sucessos e falhas
+        const successful = results.filter(r => r.success).length;
+        const failed = results.filter(r => !r.success).length;
+
+        // Para pastas fixas, não salva no localStorage
+        if (!isUploadingToFixedFolder) {
+          // Salva as fotos bem-sucedidas no localStorage
+          let totalSize = 0;
+          const photos = this.storageService.getPhotos();
+
+          results.forEach((result, index) => {
+            if (result.success) {
+              const file = filesArray[index];
+
+              const photo: Photo = {
+                id: crypto.randomUUID(),
+                userId: user.id,
+                folderId: this.selectedFolderId(),
+                name: file.name,
+                size: file.size,
+                type: file.type,
+                uploadedAt: new Date().toISOString(),
+                dataUrl: result.fileUrl,
+                s3Key: result.fileKey,
+                bucketName: result.bucketName
+              };
+
+              photos.push(photo);
+              totalSize += file.size;
+            }
+          });
+
+          this.storageService.savePhotos(photos);
+
+          // Atualiza storage usado
+          this.storageService.updateUser(user.id, {
+            storageUsed: user.storageUsed + totalSize
+          });
+
+          // Atualiza user
+          const updatedUser = this.storageService.getCurrentUser();
+          if (updatedUser) {
+            this.currentUser.set(updatedUser);
+          }
+        }
+
+        // Mensagem de sucesso
+        if (successful > 0 && failed === 0) {
+          this.showSuccess(
+            'Upload realizado!',
+            `${successful} foto(s) enviada(s) com sucesso`
+          );
+        } else if (successful > 0 && failed > 0) {
+          this.showError(
+            'Upload parcial',
+            `${successful} foto(s) enviada(s), ${failed} falharam`
+          );
+        } else {
+          this.showError(
+            'Erro no upload',
+            'Todas as fotos falharam no upload'
+          );
+        }
+
+        // Recarrega fotos
+        this.loadPhotos();
+
+        this.isUploading.set(false);
+        input.value = '';
+      },
+      error: (error) => {
+        console.error('Erro no upload múltiplo:', error);
+        this.showError('Erro no upload', error.message || 'Falha ao enviar arquivos');
+        this.isUploading.set(false);
+        input.value = '';
+      }
+    });
   }
 
   /**
@@ -628,10 +595,7 @@ export class UserDashboardComponent implements OnInit {
    */
   downloadPhoto(photo: PhotoWithUrl): void {
     if (!photo.s3Key) {
-      this.showError(
-        this.languageService.t('userDashboard.messages.error'),
-        this.languageService.t('userDashboard.messages.s3KeyNotFound')
-      );
+      this.showError('Erro', 'Chave S3 não encontrada');
       return;
     }
 
@@ -641,17 +605,11 @@ export class UserDashboardComponent implements OnInit {
         link.href = url;
         link.download = photo.name;
         link.click();
-        this.showSuccess(
-          this.languageService.t('userDashboard.messages.downloadStarted'),
-          this.languageService.t('userDashboard.messages.downloadStartedDesc').replace('{name}', photo.name)
-        );
+        this.showSuccess('Download iniciado', `Baixando ${photo.name}`);
       },
       error: (error) => {
         console.error('Erro ao gerar URL de download:', error);
-        this.showError(
-          this.languageService.t('userDashboard.messages.error'),
-          this.languageService.t('userDashboard.messages.downloadError')
-        );
+        this.showError('Erro', 'Falha ao gerar link de download');
       }
     });
   }
@@ -660,20 +618,27 @@ export class UserDashboardComponent implements OnInit {
    * Deleta uma foto
    */
   deletePhoto(photo: PhotoWithUrl): void {
-    if (!confirm(this.languageService.t('userDashboard.messages.deletePhotoConfirm'))) {
+    if (!confirm(this.languageService.t('userDashboard.deletePhotoConfirm'))) {
       return;
     }
 
+    // Se é pasta fixa, não permite deletar
+    if (photo.folderId && this.isFixedFolder(photo.folderId)) {
+      this.showError(
+        'Exclusão não permitida',
+        'Não é possível excluir fotos das pastas fixas através do dashboard. Use o console S3.'
+      );
+      return;
+    }
+
+    // Se a foto tem s3Key, deleta do S3 também
     if (photo.s3Key) {
       this.uploadService.deleteFile(photo.s3Key).subscribe({
         next: (response) => {
           console.log('Arquivo deletado do S3:', response);
-
+          
           this.storageService.deletePhoto(photo.id);
-          this.showSuccess(
-            this.languageService.t('userDashboard.messages.photoDeleted'),
-            this.languageService.t('userDashboard.messages.photoDeletedFromS3')
-          );
+          this.showSuccess('Foto excluída', 'A foto foi removida do S3 e do seu armazenamento');
 
           const updatedUser = this.storageService.getCurrentUser();
           if (updatedUser) {
@@ -684,22 +649,16 @@ export class UserDashboardComponent implements OnInit {
         },
         error: (error) => {
           console.error('Erro ao deletar do S3:', error);
-
+          
           this.storageService.deletePhoto(photo.id);
-          this.showError(
-            this.languageService.t('userDashboard.messages.warning'),
-            this.languageService.t('userDashboard.messages.photoDeletedWarning')
-          );
-
+          this.showError('Aviso', 'A foto foi removida localmente, mas pode ainda estar no S3');
+          
           this.loadPhotos();
         }
       });
     } else {
       this.storageService.deletePhoto(photo.id);
-      this.showSuccess(
-        this.languageService.t('userDashboard.messages.photoDeleted'),
-        this.languageService.t('userDashboard.messages.photoDeletedLocal')
-      );
+      this.showSuccess('Foto excluída', 'A foto foi removida do seu armazenamento');
 
       const updatedUser = this.storageService.getCurrentUser();
       if (updatedUser) {
@@ -711,9 +670,20 @@ export class UserDashboardComponent implements OnInit {
   }
 
   /**
-   * Obtém itens do menu de mover
+   * Obtém itens do menu de mover para uma foto
    */
   getMoveMenuItems(photo: PhotoWithUrl): MenuItem[] {
+    // Não permite mover fotos de pastas fixas
+    if (photo.folderId && this.isFixedFolder(photo.folderId)) {
+      return [
+        {
+          label: 'Não é possível mover fotos de pastas fixas',
+          disabled: true,
+          icon: 'pi pi-lock'
+        }
+      ];
+    }
+
     const allFolders = this.folders();
     const flatFolderList: MenuItem[] = [];
 
@@ -736,7 +706,7 @@ export class UserDashboardComponent implements OnInit {
 
     return [
       {
-        label: this.languageService.t('userDashboard.root'),
+        label: this.languageService.t('userDashboard.allPhotos'),
         icon: 'pi pi-folder-open',
         command: () => this.movePhoto(photo.id, null),
         styleClass: 'move-menu-item'
@@ -750,11 +720,20 @@ export class UserDashboardComponent implements OnInit {
    */
   movePhoto(photoId: string, folderId: string | null): void {
     this.storageService.movePhotoToFolder(photoId, folderId);
-    this.showSuccess(
-      this.languageService.t('userDashboard.messages.photoMoved'),
-      this.languageService.t('userDashboard.messages.photoMovedSuccess')
-    );
+    this.showSuccess('Foto movida', 'Foto movida com sucesso');
     this.loadPhotos();
+  }
+
+  /**
+   * Trata erro ao carregar imagem
+   */
+  onImageError(event: Event, photo: PhotoWithUrl): void {
+    console.error('Erro ao carregar imagem:', photo.name);
+    
+    const updatedPhotos = this.photos().map(p => 
+      p.id === photo.id ? { ...p, displayUrl: undefined, isLoadingUrl: false } : p
+    );
+    this.photos.set(updatedPhotos);
   }
 
   /**
@@ -785,53 +764,43 @@ export class UserDashboardComponent implements OnInit {
     if (!user) return '';
 
     const limit = this.storageService.getStorageLimit(user.plan);
-    return limit === Infinity ? this.languageService.t('userDashboard.unlimited') : this.formatBytes(limit);
+    return limit === Infinity ? 'Ilimitado' : this.formatBytes(limit);
   }
 
   /**
-   * Carrega total de fotos das pastas fixas do S3
-   */
-  private loadFixedPhotosCount(): void {
-    const requests = this.FIXED_FOLDERS.map(folder =>
-      this.uploadService.listFixedFolderPhotos(folder.s3Folder).pipe(
-        map((response: { count: number }) => response.count),
-        catchError(error => {
-          console.error(`Erro ao contar fotos de ${folder.name}:`, error);
-          return of(0);
-        })
-      )
-    );
-
-    forkJoin(requests).subscribe({
-      next: (counts: number[]) => {
-        const total = counts.reduce((sum: number, count: number) => sum + count, 0);
-        this.totalFixedPhotos.set(total);
-        console.log('Total de fotos nas pastas fixas:', total);
-      },
-      error: (error) => {
-        console.error('Erro ao carregar contagem de fotos fixas:', error);
-        this.totalFixedPhotos.set(0);
-      }
-    });
-  }
-
-  /**
-   * Obtém total de fotos do usuário (dinâmicas + fixas)
+   * Obtém total de fotos do usuário
    */
   getTotalPhotos(): number {
     const user = this.currentUser();
     if (!user) return 0;
 
-    // Fotos dinâmicas (localStorage)
-    const dynamicPhotos = this.storageService.getUserPhotos(user.id).length;
-
-    // Fotos fixas (S3)
-    const fixedPhotos = this.totalFixedPhotos();
-
-    return dynamicPhotos + fixedPhotos;
+    return this.storageService.getUserPhotos(user.id).length;
   }
 
   /**
+   * Obtém nome da pasta atual
+   */
+  getCurrentFolderName(): string {
+    const folderId = this.selectedFolderId();
+    
+    if (!folderId) {
+      return this.languageService.t('userDashboard.allPhotos');
+    }
+
+    // Verifica se é pasta fixa
+    if (folderId === 'fixed-minhas-fotos') {
+      return 'Minhas Fotos';
+    }
+    if (folderId === 'fixed-minha-melhor-turma-de-ingles') {
+      return 'Minha Melhor Turma de Inglês';
+    }
+
+    // Pasta dinâmica
+    const folder = this.folders().find(f => f.id === folderId);
+    return folder?.name || this.languageService.t('userDashboard.allPhotos');
+  }
+
+    /**
    * Obtém o nome traduzido do plano do usuário
    */
   getTranslatedPlan(): string {
@@ -840,22 +809,6 @@ export class UserDashboardComponent implements OnInit {
 
     const planKey = `plans.${user.plan.toLowerCase()}.name`;
     return this.languageService.t(planKey);
-  }
-
-  /**
-   * Obtém nome da pasta atual
-   */
-  getCurrentFolderName(): string {
-    const folderId = this.selectedFolderId();
-    if (!folderId) return this.languageService.t('userDashboard.allPhotos');
-
-    // Verifica se é pasta fixa
-    const fixedFolder = this.FIXED_FOLDERS.find(f => f.id === folderId);
-    if (fixedFolder) return fixedFolder.name;
-
-    // Senão, busca nas pastas dinâmicas
-    const folder = this.folders().find(f => f.id === folderId);
-    return folder?.name || this.languageService.t('userDashboard.allPhotos');
   }
 
   /**
@@ -878,17 +831,5 @@ export class UserDashboardComponent implements OnInit {
       summary: title,
       detail: message
     });
-  }
-
-  /**
-   * Trata erro ao carregar imagem
-   */
-  onImageError(event: Event, photo: PhotoWithUrl): void {
-    console.error('Erro ao carregar imagem:', photo.name);
-    
-    const updatedPhotos = this.photos().map(p => 
-      p.id === photo.id ? { ...p, displayUrl: undefined, isLoadingUrl: false } : p
-    );
-    this.photos.set(updatedPhotos);
   }
 }
